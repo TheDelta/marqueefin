@@ -3,7 +3,7 @@
 import os
 
 # SemVer; scripts/release.py bumps it, and a release tag must match it
-__version__ = "0.0.0"
+__version__ = "1.0.0"
 PROJECT = "Marqueefin"
 PROJECT_URL = "https://github.com/TheDelta/marqueefin"  # linked in the page footer ('': no link)
 USER_AGENT = f"{PROJECT}/{__version__}"
