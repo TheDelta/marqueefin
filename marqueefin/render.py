@@ -136,7 +136,8 @@ def credit_html():
     """The footer's "Marqueefin 1.0.0 · GitHub" (the link only with PROJECT_URL)."""
     credit = f"{PROJECT} {html.escape(__version__)}"
     if PROJECT_URL:
-        label = "GitHub" if "github.com" in PROJECT_URL else "Source code"
+        host = urllib.parse.urlsplit(PROJECT_URL).hostname or ""
+        label = "GitHub" if host in ("github.com", "www.github.com") else "Source code"
         url = html.escape(PROJECT_URL, quote=True)
         credit += f' <span aria-hidden="true">&middot;</span> <a href="{url}" target="_blank" rel="noopener">{label}</a>'
     return credit

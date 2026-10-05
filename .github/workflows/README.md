@@ -16,9 +16,9 @@ flowchart LR
 ```
 
 1. **Pull request:** `CI` and `Pull request` run. Every job they run must pass
-   before you can merge. These are the required checks on `main`. When CI is done,
-   `SonarQube Cloud` analyses the code with CI's coverage and reports on the pull
-   request.
+   before you can merge. These are the required checks on `main`. CI's last job,
+   `SonarQube Cloud`, analyses the code with the tests' coverage and reports on the
+   pull request.
 2. **Merge to `main`:** `CI` runs again on the merged state, and so does `Scorecard`.
    `Release` starts too, but it only checks whether the commit is a release and stops
    if it isn't.
@@ -30,30 +30,30 @@ flowchart LR
 
 ## At a glance
 
-| Workflow                | File                                                     | Runs                                       | Purpose                                                                                      |
-| ----------------------- | -------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| CI                      | [ci.yaml](ci.yaml)                                       | pull requests, push to `main`, by hand     | Lint, tests, browser tests, Docker image build and scan                                      |
-| Pull request            | [pull-request.yaml](pull-request.yaml)                   | pull requests (title, new pushes)          | Conventional Commits title (it becomes the changelog line)                                   |
-| Pull request title help | [pr-title-help.yaml](pr-title-help.yaml)                 | pull requests (opened, title edited)       | A comment that explains a bad title and how to fix it                                        |
-| SonarQube Cloud         | [sonar.yaml](sonar.yaml)                                 | after every CI run (pull requests, `main`) | Code analysis with the tests' coverage; coverage of new code on pull requests                |
-| Dependabot auto-merge   | [dependabot-auto-merge.yaml](dependabot-auto-merge.yaml) | Dependabot's pull requests                 | Auto-merge for safe updates (dev tools and actions, patch and minor) once approved and green |
-| Prepare release         | [prepare-release.yaml](prepare-release.yaml)             | by hand                                    | Version bump on a `release/vX.Y.Z` branch, opens the release pull request                    |
-| Release                 | [release.yaml](release.yaml)                             | push to `main`, a `v*.*.*` tag             | Docker image, tag, GitHub release (only for a release commit)                                |
-| Scorecard               | [scorecard.yaml](scorecard.yaml)                         | push to `main`, weekly, by hand            | OpenSSF security rating, README badge (public repository only)                               |
-| Image scan              | [image-scan.yaml](image-scan.yaml)                       | weekly, by hand                            | Vulnerabilities in the published `:latest` image (public repository only)                    |
-| Links                   | [links.yaml](links.yaml)                                 | weekly, by hand                            | Broken links in the Markdown files (public repository only)                                  |
+| Workflow                | File                                                     | Runs                                   | Purpose                                                                                      |
+| ----------------------- | -------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- |
+| CI                      | [ci.yaml](ci.yaml)                                       | pull requests, push to `main`, by hand | Lint, tests, browser tests, Docker image build and scan                                      |
+| Pull request            | [pull-request.yaml](pull-request.yaml)                   | pull requests (title, new pushes)      | Conventional Commits title (it becomes the changelog line)                                   |
+| Pull request title help | [pr-title-help.yaml](pr-title-help.yaml)                 | pull requests (opened, title edited)   | A comment that explains a bad title and how to fix it                                        |
+| Dependabot auto-merge   | [dependabot-auto-merge.yaml](dependabot-auto-merge.yaml) | Dependabot's pull requests             | Auto-merge for safe updates (dev tools and actions, patch and minor) once approved and green |
+| Prepare release         | [prepare-release.yaml](prepare-release.yaml)             | by hand                                | Version bump on a `release/vX.Y.Z` branch, opens the release pull request                    |
+| Release                 | [release.yaml](release.yaml)                             | push to `main`, a `v*.*.*` tag         | Docker image, tag, GitHub release (only for a release commit)                                |
+| Scorecard               | [scorecard.yaml](scorecard.yaml)                         | push to `main`, weekly, by hand        | OpenSSF security rating, README badge (public repository only)                               |
+| Image scan              | [image-scan.yaml](image-scan.yaml)                       | weekly, by hand                        | Vulnerabilities in the published `:latest` image (public repository only)                    |
+| Links                   | [links.yaml](links.yaml)                                 | weekly, by hand                        | Broken links in the Markdown files (public repository only)                                  |
 
 ## CI
 
 The main quality gate. Locally, `npm run check` and `npm run test:e2e` run the same
 checks.
 
-| Job                                | What it checks                                                                                                                                                                                                                             | When it fails                                                                                                                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lint and checks                    | `npm run check` without the tests: Prettier, ESLint, Stylelint, markdownlint, CSpell, Ruff, Pyright, ShellCheck, Hadolint, actionlint, zizmor, LF line endings. Then zizmor's online audits (known-vulnerable or impostor action commits). | Run `npm run format`, then `npm run check`, and fix what remains. Add a new word to `cspell.config.yaml`.                                                                                                     |
-| Tests (Python 3.10), (Python 3.14) | The Python unit tests and the whole export against a fake Jellyfin and Seerr, on the oldest and newest supported Python. The coverage table is in the run's summary.                                                                       | Run `npm test`. A failure on 3.10 only usually means newer Python syntax or library use.                                                                                                                      |
-| Browser tests                      | The `src/js/lib.js` unit tests, then the demo page in Chromium (Playwright) with an accessibility scan (axe) and coverage of `src/js/` per module (in the run's summary; the full report is the `coverage-e2e` artifact).                  | Run `npm run test:js` and `npm run test:e2e`. The run's `playwright-report` artifact holds traces and screenshots. Coverage below the minimum: add tests for the uncovered lines (`coverage/e2e/index.html`). |
-| Docker image builds                | Builds the image (not pushed). Runs it once against the fake server, hardened like `compose.yaml`. Starts it in scheduled mode until it's healthy. Scans it with Trivy for fixable HIGH / CRITICAL vulnerabilities.                        | Run `docker build`. For Trivy findings: merge Dependabot's base image update, or bump the digest in the `Dockerfile`. `apk upgrade` covers fixes between images.                                              |
+| Job                                | What it checks                                                                                                                                                                                                                                    | When it fails                                                                                                                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lint and checks                    | `npm run check` without the tests: Prettier, ESLint, Stylelint, markdownlint, CSpell, Ruff, Pyright, ShellCheck, Hadolint, actionlint, zizmor, LF line endings. Then zizmor's online audits (known-vulnerable or impostor action commits).        | Run `npm run format`, then `npm run check`, and fix what remains. Add a new word to `cspell.config.yaml`.                                                                                                     |
+| Tests (Python 3.10), (Python 3.14) | The Python unit tests and the whole export against a fake Jellyfin and Seerr, on the oldest and newest supported Python. The coverage table is in the run's summary.                                                                              | Run `npm test`. A failure on 3.10 only usually means newer Python syntax or library use.                                                                                                                      |
+| Browser tests                      | The `src/js/lib.js` unit tests, then the demo page in Chromium (Playwright) with an accessibility scan (axe) and coverage of `src/js/` per module (in the run's summary; the full report is the `coverage-e2e` artifact).                         | Run `npm run test:js` and `npm run test:e2e`. The run's `playwright-report` artifact holds traces and screenshots. Coverage below the minimum: add tests for the uncovered lines (`coverage/e2e/index.html`). |
+| SonarQube Cloud                    | The code analysis with the coverage of the test jobs, for `main` and pull requests from this repository's branches (forks and Dependabot are skipped). On a pull request it fails with the quality gate. See [SonarQube Cloud](#sonarqube-cloud). | Fix the issues SonarQube Cloud lists on the pull request, or add tests for the uncovered new lines.                                                                                                           |
+| Docker image builds                | Builds the image (not pushed). Runs it once against the fake server, hardened like `compose.yaml`. Starts it in scheduled mode until it's healthy. Scans it with Trivy for fixable HIGH / CRITICAL vulnerabilities.                               | Run `docker build`. For Trivy findings: merge Dependabot's base image update, or bump the digest in the `Dockerfile`. `apk upgrade` covers fixes between images.                                              |
 
 ## Pull request
 
@@ -147,25 +147,31 @@ and every major version stay manual. The run's summary says which and why.
 
 ## SonarQube Cloud
 
-Runs after every CI run of a pull request or of `main` (`workflow_run`), so pull
-requests from forks are analyzed too: their own CI runs get no secrets. It takes the
-coverage reports CI uploaded (`coverage-python`, `coverage-js`, `coverage-e2e`), checks
-out the commit for the scanner to read (nothing from it runs) and sends the analysis to
-SonarQube Cloud, which comments on the pull request and adds its quality gate check:
-new issues, and how much of the new code the tests cover.
+The `SonarQube Cloud` job in CI, after the test jobs: it takes their coverage reports
+(`coverage-python`, `coverage-js`, `coverage-e2e`) and sends the analysis to SonarQube
+Cloud, which comments on the pull request: new issues, and how much of the new code
+the tests cover. On a pull request the job waits for the quality gate and fails with
+it, so it's a required check.
 
+- **Pull requests from forks are skipped** (the job passes): their runs get no
+  secrets, and running the scanner with the token on a fork's code isn't safe (it
+  reads its settings from the checkout). `main`'s analysis after the merge shows their
+  code as new code. Before merging, check one out (`gh pr checkout <n>`) and look at
+  it with SonarQube for IDE.
+- **Dependabot's pull requests are skipped too:** they get Dependabot secrets, not
+  Actions secrets. Add `SONAR_TOKEN` under Dependabot secrets to analyze them.
 - **Setup:** the secret `SONAR_TOKEN` (SonarQube Cloud → My Account → Security, best a
   project analysis token) and the variables `SONAR_ORGANIZATION` and
   `SONAR_PROJECT_KEY` (the project's Information page). Turn off **Automatic
   Analysis** in the project's Administration → Analysis Method: with both on, the
-  analysis fails. Without the token the workflow does nothing.
+  analysis fails. Without the token the job does nothing.
 - **Per release:** analyses of `main` carry the version (`sonar.projectVersion`, from
   `marqueefin/__init__.py`). With the project's **New Code** set to **Previous
   version** (Administration → New Code), `main`'s page shows the coverage and issues
   of everything since the last release (or release candidate), and the Activity graph
   marks each version.
-- **"No coverage-… from CI":** that CI job failed or didn't run; the analysis runs
-  without that coverage.
+- **A coverage download failed:** that test job failed or didn't run; the analysis
+  runs without that coverage.
 - **The quality gate fails on coverage:** add tests for the new lines; SonarQube
   Cloud's pull request page lists them.
 

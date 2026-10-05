@@ -295,11 +295,12 @@ export function openDetail(it, keepTrail, highlight) {
 // ---- Links to single titles: #item=<id>, without history entries ----
 const hashId = () => (/[#&]item=([0-9a-f]+)/i.exec(location.hash) || [])[1];
 function setHash(id) {
-  const url = location.pathname + location.search + (id ? "#item=" + id : "");
+  const hash = id ? "#item=" + encodeURIComponent(id) : "";
+  const url = location.pathname + location.search + hash;
   try {
     history.replaceState(null, "", url);
   } catch {
-    location.replace(id ? "#item=" + id : "#");
+    location.replace(hash || "#");
   } // e.g. file:// in some browsers
 }
 export function openFromHash() {
@@ -325,7 +326,7 @@ export async function copyToClipboard(text) {
   ta.remove();
 }
 async function copyLink(it, btn) {
-  await copyToClipboard(location.href.split("#")[0] + "#item=" + it.id);
+  await copyToClipboard(location.href.split("#")[0] + "#item=" + encodeURIComponent(it.id));
   btn.innerHTML = CHECK;
   btn.classList.add("done");
   btn.nextElementSibling.textContent = t("detail.linkCopied");

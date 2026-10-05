@@ -77,11 +77,24 @@ export const yearOrder = (sort) => {
     (byDate ? dir * a.key.localeCompare(b.key) : 0);
 };
 
-// "Surprise me": a random entry, not the one picked last time when there's a choice
-export const pickRandom = (list, last, rand = Math.random) => {
-  const pool = list.length > 1 ? list.filter((x) => x !== last) : list;
-  return pool.length ? pool[Math.floor(rand() * pool.length)] : undefined;
+// randomIndex(n): 0 to n - 1, from the browser's crypto source, every index equally
+// likely: draws from the top that would favor the low indexes are thrown away
+export const randomIndex = (n) => {
+  const limit = 2 ** 32 - (2 ** 32 % n);
+  const draw = new Uint32Array(1);
+  do {
+    crypto.getRandomValues(draw);
+  } while (draw[0] >= limit);
+  return draw[0] % n;
 };
+// "Surprise me": a random entry, not the one picked last time when there's a choice
+export const pickRandom = (list, last, index = randomIndex) => {
+  const pool = list.length > 1 ? list.filter((x) => x !== last) : list;
+  return pool.length ? pool[index(pool.length)] : undefined;
+};
+
+// convert to safe percent value
+export const percent = (value) => Math.round(Number(value) || 0);
 
 // ---- Seasons ----
 // [1, 2, 3, 5] -> "1–3, 5"

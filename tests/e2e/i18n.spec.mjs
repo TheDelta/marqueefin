@@ -80,6 +80,13 @@ test("a page opened with ?lang= keeps that language and drops the parameter", as
   expect(await page.evaluate(() => localStorage.getItem("marqueefin:lang"))).toBe("de");
 });
 
+test("a ?lang= the page doesn't offer is dropped, not stored", async ({ page }) => {
+  await openDemo(page, { search: "?lang=not-a-language" }); // simulate bad lang code
+  await expect(page.locator("#summary")).toHaveText("13 movies, 4 series and 1 collection");
+  expect(new URL(page.url()).search).toBe("");
+  expect(await page.evaluate(() => localStorage.getItem("marqueefin:lang"))).toBeNull();
+});
+
 test.describe("a browser in a language the page doesn't have", () => {
   test.use({ locale: "pl-PL" }); // no pl.json
 
