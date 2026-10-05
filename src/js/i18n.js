@@ -1,14 +1,27 @@
 // The page's language: the viewer's choice, else the browser's, else English. Not
 // dom.js: unlock.js uses this before the page's data is there.
-import { createI18n, pickLanguage } from "./lib.js";
-import { LANG, load } from "./store.js";
+import { createI18n, langFromUrl, pickLanguage } from "./lib.js";
+import { LANG, load, save } from "./store.js";
 
 export const CATALOGS = JSON.parse(document.getElementById("i18n")?.textContent || "{}");
 export const autoLang = pickLanguage(
   navigator.languages?.length ? navigator.languages : [navigator.language],
   Object.keys(CATALOGS),
 );
-export const langChoice = load(LANG) || "auto";
+// A choice just made in Settings arrives as ?lang= (see controls.js): saved, then taken
+// out of the address, so a copied link doesn't carry it
+function choiceFromUrl() {
+  const { lang, href } = langFromUrl(location.href);
+  if (!lang) return null;
+  save(LANG, lang);
+  try {
+    history.replaceState(null, "", href);
+  } catch {
+    /* file:// in some browsers: the parameter stays, which is harmless */
+  }
+  return lang;
+}
+export const langChoice = choiceFromUrl() || load(LANG) || "auto";
 export const I18N = createI18n(CATALOGS, CATALOGS[langChoice] ? langChoice : autoLang);
 export const {
   t,

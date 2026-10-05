@@ -581,3 +581,22 @@ describe("the Filters panel's 'Your list'", () => {
     assert.ok(L.markFilter("w", "w") && !L.markFilter("w", "m") && !L.markFilter("w", undefined));
   });
 });
+
+describe("the language in the address", () => {
+  const page = "file:///C:/demo.html";
+  test("withLang adds or replaces ?lang=, keeping the rest", () => {
+    assert.equal(L.withLang(page, "en"), page + "?lang=en");
+    assert.equal(L.withLang(page + "?lang=de#item=1", "fr"), page + "?lang=fr#item=1");
+  });
+  test("langFromUrl takes it out again", () => {
+    assert.deepEqual(L.langFromUrl(page + "?lang=en#item=1"), {
+      lang: "en",
+      href: page + "#item=1",
+    });
+    assert.deepEqual(L.langFromUrl(page), { lang: "", href: page });
+    assert.deepEqual(L.langFromUrl("https://x.example/p/?a=1&lang=es"), {
+      lang: "es",
+      href: "https://x.example/p/?a=1",
+    });
+  });
+});

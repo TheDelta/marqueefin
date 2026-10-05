@@ -31,13 +31,14 @@ export { expect };
 
 /**
  * Opens the demo page. storage: localStorage entries (without the "marqueefin:"
- * prefix) set before the page's script runs; hash: e.g. "item=<id>"; confirm:
+ * prefix) set before the page's script runs; search: e.g. "?lang=de"; hash: e.g.
+ * "item=<id>"; confirm:
  * the answer to confirm() dialogs (default yes); sealed: the protected page, which
  * waits for its passphrase.
  */
 export async function openDemo(
   page,
-  { storage = {}, hash = "", confirm = true, sealed = false } = {},
+  { storage = {}, hash = "", search = "", confirm = true, sealed = false } = {},
 ) {
   await page.addInitScript(
     ({ storage, confirm }) => {
@@ -53,7 +54,7 @@ export async function openDemo(
     { storage, confirm },
   );
   if (sealed) return page.goto(pathToFileURL(DEMO_SEALED).href); // the passphrase first
-  await page.goto(DEMO_URL + (hash ? `#${hash}` : ""));
+  await page.goto(DEMO_URL + search + (hash ? `#${hash}` : ""));
   await expect(page.locator("#grid .card").first()).toBeVisible();
 }
 

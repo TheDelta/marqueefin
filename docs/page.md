@@ -223,7 +223,7 @@ HH:MM]` tag (all parts optional) and CSV rows starting `id,state,` (rating / upd
   ("{d} {mon} {y}" / "{d}. {mon} {y}"), `_monthYear`, `_stamp`, `_onDate` ("am
   {date}" in German), `_name`.
 - `export.py` embeds all of them (`#i18n`). `pickLanguage` (lib.js) takes the
-  viewer's choice (Settings → Language, `marqueefin:lang`; a change reloads), else
+  viewer's choice (Settings → Language, `marqueefin:lang`; a change reloads with `?lang=`, which the new page saves and removes from the address: storage written right before a reload isn't always there yet), else
   the first browser language there are texts for, else English. `createI18n` gives
   `t(key, vars)` (falls back to English per key) and the formatters (`fmtDate`,
   `dayText`, `relTime`, `num`, `fmtSize`, `runtime`, `langName`, `list`).
