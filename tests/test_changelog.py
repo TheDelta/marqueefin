@@ -292,18 +292,23 @@ if __name__ == "__main__":
 
 @unittest.skipUnless(GIT, "needs git")
 class FirstRelease(unittest.TestCase):
-    """The public repository's start: one commit importing the project (version 0.0.0,
-    the notes under [Unreleased]), then Prepare release with "major"."""
+    """A repository's start: one commit importing the project (version 0.0.0, the
+    notes under [Unreleased]), then Prepare release with "major". (Its own changelog:
+    the real one has had its [1.0.0] since the first release.)"""
+
+    CHANGELOG = (
+        "# Changelog\n\n## [Unreleased]\n\n" + changelog.TEMPLATE + "\n\n"
+        "The first public release.\n\n"
+        "### 🚀 Features\n\n- **The whole library on one page:** posters and more.\n"
+    )
 
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.root = tmp.name
-        with open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8") as f:
-            self.changelog = f.read()  # the real one
         release.write(self.root, release.VERSION_FILE,
                       f'__version__ = "0.0.0"\nPROJECT_URL = "{URL}"\n')  # fmt: skip
-        release.write(self.root, "CHANGELOG.md", self.changelog)
+        release.write(self.root, "CHANGELOG.md", self.CHANGELOG)
         self.git("init", "-q", "-b", "main")
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "feat: Marqueefin")  # the import, no pull request
