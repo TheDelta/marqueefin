@@ -51,9 +51,12 @@ test.describe("a German browser", () => {
     await openDemo(page);
     await page.locator("#openSettings").click();
     await expect(page.locator("#langSel option").first()).toHaveText("Automatisch (Deutsch)");
-    await page.locator("#langSel").selectOption("en"); // reloads
+    await page.locator("#langSel").selectOption("en"); // reloads, with ?lang=en
     await expect(page.locator("#summary")).toHaveText("13 movies, 4 series and 1 collection");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    expect(new URL(page.url()).search).toBe(""); // taken out of the address again
+    await page.reload(); // and remembered
+    await expect(page.locator("#summary")).toHaveText("13 movies, 4 series and 1 collection");
   });
 
   test("accessibility in German", async ({ page }) => {
@@ -64,6 +67,17 @@ test.describe("a German browser", () => {
       .analyze();
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
+});
+
+test("a page opened with ?lang= keeps that language and drops the parameter", async ({ page }) => {
+  // What the reload after Settings → Language opens (the switch's own test leaves that
+  // page again, so it's checked here, where the page stays)
+  await openDemo(page, { search: "?lang=de", hash: "item=" + idOf("Northbound") });
+  await expect(page.locator("#summary")).toHaveText("13 Filme, 4 Serien und 1 Sammlung");
+  const url = new URL(page.url());
+  expect(url.search).toBe("");
+  expect(url.hash).toBe("#item=" + idOf("Northbound")); // the rest of the address stays
+  expect(await page.evaluate(() => localStorage.getItem("marqueefin:lang"))).toBe("de");
 });
 
 test.describe("a browser in a language the page doesn't have", () => {

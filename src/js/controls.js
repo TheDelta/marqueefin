@@ -25,7 +25,7 @@ import { nameOf } from "./format.js";
 import { openDetail } from "./detail.js";
 import { apply, fillGenres, shownTitles, splitApplies } from "./grid.js";
 import { CATALOGS, autoLang, langChoice, langName, t } from "./i18n.js";
-import { esc, pickRandom } from "./lib.js";
+import { esc, pickRandom, withLang } from "./lib.js";
 import { updateTray } from "./list.js";
 import { markTimes, markedItems, marks, myRatings, saveMarks, saveRatings } from "./marks.js";
 import { state } from "./state.js";
@@ -228,7 +228,7 @@ function initPageLanguage() {
   langSel.value = CATALOGS[langChoice] ? langChoice : "auto";
   langSel.addEventListener("change", () => {
     save(LANG, langSel.value);
-    location.reload();
+    location.replace(withLang(location.href, langSel.value)); // see withLang (lib.js)
   });
 }
 

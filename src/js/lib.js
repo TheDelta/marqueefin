@@ -330,6 +330,22 @@ export function pickLanguage(prefs, available, fallback = "en") {
   return available.includes(fallback) ? fallback : available[0];
 }
 
+// Switching the language reloads with `?lang=`
+// (storage written right before a reload isn't always there yet)
+// the new page takes it out again
+export const withLang = (href, lang) => {
+  const url = new URL(href);
+  url.searchParams.set("lang", lang);
+  return url.href;
+};
+/** {lang, href}: the language a URL carries ("" for none) and the URL without it. */
+export function langFromUrl(href) {
+  const url = new URL(href);
+  const lang = url.searchParams.get("lang") || "";
+  url.searchParams.delete("lang");
+  return { lang, href: url.href };
+}
+
 // Missing keys fall back to English; plural texts are {one, other} objects
 export function createI18n(catalogs, lang) {
   const en = catalogs.en || {};
