@@ -31,6 +31,8 @@ release's notes on GitHub are its section here.
     🔒 Security, 📚 Documentation, 📦 Dependencies, 🧰 Maintenance.
 -->
 
+## [1.0.0] - 2026-10-05
+
 The first public release. Marqueefin exports a whole Jellyfin library into one
 self-contained HTML page to share with friends: they browse it offline, keep their own
 list and compare it with yours.
@@ -74,3 +76,18 @@ list and compare it with yours.
   build attestation and regular vulnerability scans.
 - **Python standard library only**, and a demo page with made-up titles
   (`scripts/demo_page.py`) to try it without a server.
+
+### 🐛 Fixes
+
+- **page:** Switching the language sticks, even when the reload is fast by [@TheDelta](https://github.com/TheDelta) in [#3](https://github.com/TheDelta/marqueefin/pull/3)
+- Harden values from the address; library data & enhance ci security by [@TheDelta](https://github.com/TheDelta) in [#6](https://github.com/TheDelta/marqueefin/pull/6)
+- **page:** Escape the season status in the detail view by [@TheDelta](https://github.com/TheDelta) in [#7](https://github.com/TheDelta/marqueefin/pull/7)
+
+### 🧰 Maintenance
+
+- The first-release test brings its own changelog by [@TheDelta](https://github.com/TheDelta) in [#4](https://github.com/TheDelta/marqueefin/pull/4)
+- **ci:** Report SQ Cloud on the pull request's commit by [@TheDelta](https://github.com/TheDelta) in [#5](https://github.com/TheDelta/marqueefin/pull/5)
+- **release:** Let the bot commit through the api, so it's verified by [@TheDelta](https://github.com/TheDelta) in [#8](https://github.com/TheDelta/marqueefin/pull/8)
+
+[Unreleased]: https://github.com/TheDelta/marqueefin/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/TheDelta/marqueefin/releases/tag/v1.0.0
