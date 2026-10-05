@@ -1,0 +1,3 @@
+# One tool at a time: several may touch the same file (concurrent=false)
+echo "🐕 husky pre-commit: formatting and linting the staged files..."
+npx --no -- lint-staged --concurrent false

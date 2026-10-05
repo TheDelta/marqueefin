@@ -1,0 +1,12 @@
+{
+  "include": ["export.py", "marqueefin", "docker", "scripts", "tests"],
+  "exclude": ["**/node_modules", "**/.venv", "**/__pycache__"],
+  "extraPaths": [".", "scripts"],
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "standard",
+  "reportUnusedImport": "error",
+  "reportUnusedVariable": "error",
+  "reportUnusedClass": "error",
+  "reportUnusedFunction": "error",
+  "reportDuplicateImport": "error"
+}

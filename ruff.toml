@@ -1,0 +1,43 @@
+# Ruff: lint (`ruff check`) and format (`ruff format`, Black's style) for all
+# Python here. Used by `npm run check`, the pre-commit hook, CI and editors.
+target-version = "py310"
+# 100 columns for code (the formatters enforce it), as Prettier
+line-length = 100
+extend-exclude = [".venv"]
+
+[format]
+line-ending = "lf"
+
+[lint]
+select = [
+  "F",   # pyflakes: real errors (undefined / unused names)
+  "E9",  # syntax errors
+  "B",   # bugbear: likely bugs
+  "UP",  # pyupgrade, for the Python version above
+  "SIM", # simpler equivalents
+  "DTZ", # time zone aware dates (local_today(), never date.today())
+  "C90", # complexity, see below
+  "S",   # security (bandit)
+  "I",   # sorted imports
+  "A",   # shadowed builtins
+  "C4",  # comprehensions
+  "PIE", # unnecessary code
+  "RET", # return statements
+  "PERF", # performance anti-patterns
+  "RUF", # Ruff's own checks
+]
+ignore = [
+  # urlopen() on URLs from the user's own settings (Jellyfin, Seerr, TMDB images,
+  # flags, Gotify); notify.py checks the scheme itself
+  "S310",
+]
+
+# The en dash is on purpose: page text such as "E4–E5" and "2018–2022"
+allowed-confusables = ["–"]
+
+[lint.per-file-ignores]
+# Tests run the project's own scripts (subprocess) and use made-up keys and tokens
+"tests/**" = ["S603", "S105", "S106"]
+
+[lint.mccabe]
+max-complexity = 10

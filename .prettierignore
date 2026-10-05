@@ -1,0 +1,5 @@
+# Generated or third-party
+package-lock.json
+CODE_OF_CONDUCT.md
+.venv/
+build/

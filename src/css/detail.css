@@ -1,0 +1,410 @@
+/* Dialogs and the detail view */
+dialog {
+  border: 0;
+  padding: 0;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 12px;
+  width: min(820px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+dialog::backdrop {
+  background: var(--scrim);
+}
+.d {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) 1fr;
+  gap: 28px;
+  padding: 28px;
+  position: relative;
+}
+.d img,
+.d .dph {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--bg);
+  display: block;
+}
+.dcol {
+  min-width: 0;
+}
+/* Under the cover: watched, last watched, favorite, added, updated */
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.d h2 {
+  font: 800 clamp(2rem, 5vw, 3rem)/0.95 var(--display);
+  margin: 0 0 10px;
+  padding-right: 40px;
+}
+.d .genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.d .genres li {
+  font-size: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 3px 10px;
+}
+.d .ov {
+  margin: 0 0 20px;
+  max-width: 62ch;
+}
+/* External links: plain text links with an "opens elsewhere" icon */
+.d .links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin: 0 0 20px;
+}
+.d .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+.d .links a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+.ext {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.d .links a:hover .ext {
+  stroke: currentcolor;
+}
+/* Jellyfin itself (--public-url): a button, apart from the database links */
+.d .links .jfbtn {
+  gap: 8px;
+  margin-left: auto;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  background: transparent;
+}
+.d .links .jfbtn:hover {
+  color: var(--on-accent);
+  background: var(--accent);
+}
+.d .links .jfbtn > svg:first-child {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.d .links .jfbtn .ext,
+.d .links .jfbtn:hover .ext {
+  stroke: currentcolor;
+}
+/* Your list: a section of its own under the links */
+.d .yourlist {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  margin: 0 0 24px;
+}
+/* Your list in the detail view: Wanted | Owned | Watched, then "Remove".
+   Tinted even when off; the active state is solid in its color. */
+.markseg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.markseg .unmark {
+  margin-left: 14px;
+}
+.markseg [data-set]:not(.unmark) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 0.9rem var(--body);
+  color: var(--ink);
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+  cursor: pointer;
+}
+.markseg [data-set="m"] {
+  --c: var(--accent);
+  border-radius: 8px 0 0 8px;
+}
+.markseg [data-set="o"] {
+  --c: var(--info);
+  border-radius: 0;
+  margin: 0 -1px; /* shared borders */
+}
+.markseg [data-set="w"] {
+  --c: var(--ok);
+  border-radius: 0 8px 8px 0;
+}
+.markseg [data-set]:not(.unmark):hover {
+  background: color-mix(in srgb, var(--c) 22%, transparent);
+}
+.markseg [aria-pressed="true"] {
+  background: var(--c) !important;
+  border-color: var(--c) !important;
+  color: var(--on-accent) !important;
+  position: relative;
+}
+.markseg svg,
+.markmenu svg,
+.xstate svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.markseg [data-set="m"][aria-pressed="true"] svg {
+  fill: currentcolor;
+}
+.d .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+/* "Your rating ★★★★☆" under the switch, once a title is watched */
+.myratewrap {
+  flex-basis: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.myratewrap[hidden] {
+  display: none;
+}
+/* "Watched 3 days ago", before the rating */
+.myratewrap .mwhen {
+  font-weight: 500;
+  margin-right: 8px;
+}
+/* Five stars, laid out right to left: hovering a star lights it and the ones
+   before it (the following siblings in the markup) */
+.myrate {
+  display: inline-flex;
+  flex-direction: row-reverse;
+}
+.myrate button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.myrate svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.myrate button.on {
+  color: var(--star);
+}
+.myrate button.on svg {
+  fill: currentcolor;
+}
+/* While hovering, only the preview counts (it may be lower than the rating) */
+.myrate:hover button {
+  color: var(--muted);
+}
+.myrate:hover button svg {
+  fill: none;
+}
+.myrate button:hover,
+.myrate button:hover ~ button {
+  color: var(--star);
+}
+.myrate button:hover svg,
+.myrate button:hover ~ button svg {
+  fill: currentcolor;
+}
+.xrow .myrate button {
+  width: 22px;
+  height: 22px;
+}
+.xrow .myrate svg {
+  width: 16px;
+  height: 16px;
+}
+.specs {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 18px;
+  margin: 0 0 24px;
+  font-size: 0.9rem;
+}
+.specs dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+.specs dd {
+  margin: 0;
+}
+.specs .trk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+} /* one audio track per line */
+.specs .flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+/* Language flags (4:3 SVG); .d .flag beats the poster rule ".d img" */
+.d .flag {
+  width: 22px;
+  height: auto;
+  aspect-ratio: 4/3;
+  flex: none;
+  border-radius: 2px;
+  object-fit: cover;
+  background: none;
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: help;
+}
+.specs .lang {
+  font-size: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 6px;
+  line-height: 1.5;
+}
+/* "+2": the other languages, named on hover */
+.more {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 6px;
+  line-height: 1.5;
+  cursor: help;
+}
+.more:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+
+/* Facts under the title: year, length, age rating, score */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.fact svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--star);
+}
+.facts + .facts {
+  margin-top: -6px;
+}
+.fact.added {
+  font-weight: 500;
+  color: var(--muted);
+}
+/* Video / audio row: resolution solid, HDR formats in accent, the rest outlined */
+.fact.res {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+.fact.hdr {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.fact.tech {
+  background: transparent;
+}
+/* FSK label colors; text color picked per background for contrast */
+.fsk0 {
+  background: #fff;
+  color: #111;
+  border-color: #111;
+}
+.fsk6 {
+  background: #ffed00;
+  color: #111;
+  border-color: #ffed00;
+}
+.fsk12 {
+  background: #00a651;
+  color: #0b1a10;
+  border-color: #00a651;
+}
+.fsk16 {
+  background: #009fe3;
+  color: #06131c;
+  border-color: #009fe3;
+}
+.fsk18 {
+  background: #e30613;
+  color: #fff;
+  border-color: #e30613;
+}
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

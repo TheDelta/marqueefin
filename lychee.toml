@@ -1,0 +1,11 @@
+# lychee (link checker), used by .github/workflows/links.yaml
+exclude_path = ["node_modules", ".venv", "CHANGELOG.md"] # compare links exist only after a release
+exclude = [
+  "^https?://(www\\.)?example\\.(com|org)",     # placeholders in the docs
+  "^https?://(localhost|127\\.0\\.0\\.1|192\\.168\\.)", # local addresses in examples
+  "^https?://(jellyfin|seerr|gotify)(:\\d+)?/",  # container names in examples
+  "^https://github\\.com/TheDelta/marqueefin/(discussions|security|issues/new)", # need a login
+]
+accept = ["200..=299", "429"] # 429: rate-limited, not broken
+max_retries = 3
+timeout = 20

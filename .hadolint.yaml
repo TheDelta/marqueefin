@@ -1,0 +1,4 @@
+ignored:
+  # Pinned apk versions break the build when Alpine drops them after a security fix;
+  # the base image is pinned by digest instead
+  - DL3018

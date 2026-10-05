@@ -1,0 +1,57 @@
+{
+  "name": "marqueefin",
+  "private": true,
+  "license": "MIT",
+  "description": "Marqueefin: Floating UI for the exported page (inlined by export.py) and the development tools",
+  "type": "module",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "^11",
+      "onFail": "warn"
+    }
+  },
+  "scripts": {
+    "prepare": "husky",
+    "build": "esbuild src/js/main.js src/css/main.css --bundle --outdir=build --entry-names=page --format=esm --charset=utf8 --log-level=warning",
+    "check": "node scripts/check.mjs",
+    "format": "node scripts/check.mjs --fix",
+    "test": "python -m unittest discover -s tests -t .",
+    "test:js": "node -e \"fs.mkdirSync('coverage/js', { recursive: true })\" && node --test --experimental-test-coverage --test-coverage-include=src/js/lib.js --test-coverage-lines=80 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/js/lcov.info \"tests/js/**/*.test.mjs\"",
+    "test:e2e": "playwright test",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "@floating-ui/dom": "1.8.0",
+    "@fontsource-variable/big-shoulders-display": "5.3.0",
+    "@fontsource-variable/instrument-sans": "5.3.0",
+    "@noble/hashes": "2.4.0",
+    "esbuild": "0.28.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "@cspell/dict-de-de": "4.1.2",
+    "@cspell/dict-es-es": "3.0.8",
+    "@cspell/dict-fr-fr": "2.3.2",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "cspell": "10.3.6",
+    "eslint": "10.11.0",
+    "globals": "17.13.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "markdownlint-cli2": "0.23.3",
+    "monocart-coverage-reports": "2.13.0",
+    "prettier": "3.9.9",
+    "pyright": "1.1.414",
+    "stylelint": "17.16.0",
+    "stylelint-config-standard": "40.0.0"
+  }
+}

@@ -1,0 +1,108 @@
+/* Settings */
+/* Theme: Auto | Light | Dark, radio buttons drawn as one segmented control */
+.themerow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+}
+.themerow legend {
+  float: left;
+  padding: 0;
+  font: 600 0.9rem var(--body);
+  color: var(--ink);
+}
+/* Language: the same row style as the theme below it */
+.langrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 14px;
+  font: 600 0.9rem var(--body);
+  color: var(--ink);
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font: 600 0.85rem var(--body);
+  color: var(--muted);
+  cursor: pointer;
+}
+.seg label + label {
+  border-left: 1px solid var(--line);
+}
+.seg input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.seg svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.seg label:hover {
+  color: var(--ink);
+}
+.seg label:has(input:checked) {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.seg label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+.seg label:has(input:checked:focus-visible) {
+  outline-color: var(--on-accent);
+}
+/* Version, project link and disclaimer, also reachable from Settings */
+.about {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.about a {
+  color: var(--ink);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.about a:hover {
+  color: var(--accent);
+}
+.setlist {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.setrow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.setrow[hidden] {
+  display: none;
+}
+.hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding-left: 42px;
+}

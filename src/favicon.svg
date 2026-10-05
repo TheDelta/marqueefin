@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Marqueefin: a cinema marquee, a board framed by light bulbs, with an M -->
+  <rect x="2.5" y="7.5" width="59" height="49" rx="9" fill="#1A2030" stroke="#3A4766" stroke-width="1.5"/>
+  <g fill="#F0B44A"><circle cx="9.5" cy="14.5" r="2.7"/><circle cx="9.5" cy="21.5" r="2.7"/><circle cx="9.5" cy="28.5" r="2.7"/><circle cx="9.5" cy="35.5" r="2.7"/><circle cx="9.5" cy="42.5" r="2.7"/><circle cx="9.5" cy="49.5" r="2.7"/><circle cx="17" cy="14.5" r="2.7"/><circle cx="17" cy="49.5" r="2.7"/><circle cx="24.5" cy="14.5" r="2.7"/><circle cx="24.5" cy="49.5" r="2.7"/><circle cx="32" cy="14.5" r="2.7"/><circle cx="32" cy="49.5" r="2.7"/><circle cx="39.5" cy="14.5" r="2.7"/><circle cx="39.5" cy="49.5" r="2.7"/><circle cx="47" cy="14.5" r="2.7"/><circle cx="47" cy="49.5" r="2.7"/><circle cx="54.5" cy="14.5" r="2.7"/><circle cx="54.5" cy="21.5" r="2.7"/><circle cx="54.5" cy="28.5" r="2.7"/><circle cx="54.5" cy="35.5" r="2.7"/><circle cx="54.5" cy="42.5" r="2.7"/><circle cx="54.5" cy="49.5" r="2.7"/></g>
+  <path d="M19 45V20h6.5L32 30l6.5-10H45v25h-6.5V31.5L32 40l-6.5-8.5V45z" fill="#FFF4DC"/>
+</svg>

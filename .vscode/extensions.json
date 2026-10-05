@@ -1,0 +1,19 @@
+{
+  // The extensions for the tools this repository uses (see CONTRIBUTING.md);
+  // VS Code offers to install them when the folder is opened
+  "recommendations": [
+    "charliermarsh.ruff",
+    "ms-python.python",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
+    "davidanson.vscode-markdownlint",
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
+    "github.vscode-github-actions",
+    "vivaxy.vscode-conventional-commits",
+    "timonwong.shellcheck",
+    "sonarsource.sonarlint-vscode"
+  ]
+}

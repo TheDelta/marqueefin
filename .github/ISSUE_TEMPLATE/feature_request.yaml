@@ -1,0 +1,49 @@
+name: ✨ Feature request
+description: Suggest an idea or an improvement.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Please check the [existing issues](https://github.com/TheDelta/marqueefin/issues) first.
+        Not sure yet or want to talk it through? Start a [discussion](https://github.com/TheDelta/marqueefin/discussions) instead.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: What are you trying to do, and what makes it hard today?
+      placeholder: When my friends look for something to watch tonight, they can't …
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How could it work? Sketches or screenshots of similar tools are welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+
+  - type: dropdown
+    id: who
+    attributes:
+      label: Who is it for?
+      options:
+        - People viewing the page
+        - Whoever runs the export (settings, Docker, upload)
+        - Both
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to work on this myself (see CONTRIBUTING.md).

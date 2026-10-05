@@ -1,0 +1,123 @@
+/* Title row, close buttons, focus outlines, the dialog animation */
+/* Title with its copy-link button */
+.titlerow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0 0 10px;
+  padding-right: 44px;
+}
+.d .titlerow h2 {
+  margin: 0;
+  padding-right: 0;
+}
+.alttitle {
+  margin: -4px 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+} /* the other title, English / German */
+.alttitle span {
+  color: var(--ink);
+  font-weight: 600;
+}
+.iconbtn {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.iconbtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.iconbtn.done {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.copied {
+  color: var(--ok);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+/* "A · B · C": each part its own span, the dot drawn with space on both sides */
+.parts > span + span::before {
+  content: "\00b7";
+  margin: 0 0.6em;
+  color: var(--muted);
+  font-weight: 700;
+}
+/* Watched / favorite in the facts row */
+.fact.watched,
+.fact.partial,
+.fact.fav {
+  background: transparent;
+  border-color: currentcolor;
+}
+.fact.watched {
+  color: var(--ok);
+}
+.fact.partial {
+  color: var(--info);
+}
+.fact.fav {
+  color: var(--heart);
+}
+.fact.watched svg,
+.fact.partial svg {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.2;
+}
+.fact.fav svg {
+  fill: currentcolor;
+}
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+@media (width <= 620px) {
+  .d {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .d img,
+  .d .dph {
+    max-width: 180px;
+  }
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  dialog[open] {
+    animation: pop 0.18s ease-out;
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

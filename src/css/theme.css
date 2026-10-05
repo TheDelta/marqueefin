@@ -1,0 +1,123 @@
+/* Color tokens: light, dark, and a theme picked in Settings */
+:root {
+  /* Light theme. Text colors keep 4.5:1 (WCAG AA) on the page, on dialogs and on
+     their own 14% tinted chips; the browser tests check it with axe */
+  --bg: #e4e8ee;
+  --surface: #f6f7f9;
+  --ink: #1a2030;
+  --muted: #586174;
+  --line: #c8cfda;
+  --accent: #814b08;
+  --marquee: #1a2030;
+  --scrim: rgb(20 25 37 / 55%);
+  --on-accent: #fff;
+  --on-ok: #fff;
+  --ok: #1e643f;
+  --warn: #804b05;
+  --bad: #a62016;
+  --star: #c98a00;
+  --info: #195a90;
+  --heart: #d6336c;
+  /* The list bar at the bottom: a light bar here, a dark one in dark mode */
+  --tray-bg: #fff;
+  --tray-ink: #1a2030;
+  --tray-line: #c8cfda;
+  --tray-shadow: 0 10px 32px rgb(20 25 37 / 20%);
+  --tray-btn: rgb(26 32 48 / 4%);
+  --tray-btn-line: rgb(26 32 48 / 22%);
+  --tray-btn-hover: rgb(26 32 48 / 9%);
+  --tray-btn-hover-line: rgb(26 32 48 / 40%);
+  --tray-main: #814b08;
+  --tray-main-hover: #6b3e06;
+  --tray-main-ink: #fff;
+  --tray-danger: #fdecec;
+  --tray-danger-line: #f0b4b4;
+  --tray-danger-hover: #fbd8d8;
+  --tray-danger-hover-line: #e48f8f;
+  --tray-danger-ink: #9b1c1c;
+  --display:
+    "Big Shoulders Display Variable", "Big Shoulders Display", "Arial Narrow", "Roboto Condensed",
+    "Impact", sans-serif;
+  --body:
+    "Instrument Sans Variable", "Instrument Sans", system-ui, -apple-system, "Segoe UI", "Roboto",
+    sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131824;
+    --surface: #1c2332;
+    --ink: #e6e9ef;
+    --muted: #97a0b2;
+    --line: #2d3647;
+    --accent: #f0b44a;
+    --marquee: #f0b44a;
+    --scrim: rgb(5 8 14 / 72%);
+    --on-accent: #131824;
+    --on-ok: #131824;
+    --ok: #6fcf97;
+    --warn: #f0b44a;
+    --bad: #ff8a7a;
+    --star: #f5c518;
+    --info: #7fb8f0;
+    --heart: #ff7a9a;
+    --tray-bg: #1f2738;
+    --tray-ink: #e6e9ef;
+    --tray-line: rgb(255 255 255 / 10%);
+    --tray-shadow: 0 10px 32px rgb(0 0 0 / 45%);
+    --tray-btn: rgb(255 255 255 / 6%);
+    --tray-btn-line: rgb(255 255 255 / 22%);
+    --tray-btn-hover: rgb(255 255 255 / 12%);
+    --tray-btn-hover-line: rgb(255 255 255 / 40%);
+    --tray-main: #f0b44a;
+    --tray-main-hover: #f5c46a;
+    --tray-main-ink: #131824;
+    --tray-danger: #7f1d1d;
+    --tray-danger-line: #9b2c2c;
+    --tray-danger-hover: #991b1b;
+    --tray-danger-hover-line: #b91c1c;
+    --tray-danger-ink: #fde2e2;
+  }
+}
+/* A theme picked in Settings (data-theme on <html>) beats the system setting;
+   color-scheme makes scrollbars and form controls follow it */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131824;
+  --surface: #1c2332;
+  --ink: #e6e9ef;
+  --muted: #97a0b2;
+  --line: #2d3647;
+  --accent: #f0b44a;
+  --marquee: #f0b44a;
+  --scrim: rgb(5 8 14 / 72%);
+  --on-accent: #131824;
+  --on-ok: #131824;
+  --ok: #6fcf97;
+  --warn: #f0b44a;
+  --bad: #ff8a7a;
+  --star: #f5c518;
+  --info: #7fb8f0;
+  --heart: #ff7a9a;
+  --tray-bg: #1f2738;
+  --tray-ink: #e6e9ef;
+  --tray-line: rgb(255 255 255 / 10%);
+  --tray-shadow: 0 10px 32px rgb(0 0 0 / 45%);
+  --tray-btn: rgb(255 255 255 / 6%);
+  --tray-btn-line: rgb(255 255 255 / 22%);
+  --tray-btn-hover: rgb(255 255 255 / 12%);
+  --tray-btn-hover-line: rgb(255 255 255 / 40%);
+  --tray-main: #f0b44a;
+  --tray-main-hover: #f5c46a;
+  --tray-main-ink: #131824;
+  --tray-danger: #7f1d1d;
+  --tray-danger-line: #9b2c2c;
+  --tray-danger-hover: #991b1b;
+  --tray-danger-hover-line: #b91c1c;
+  --tray-danger-ink: #fde2e2;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

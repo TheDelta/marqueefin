@@ -1,0 +1,17 @@
+{
+  "conventionalCommits.scopes": [
+    "ci",
+    "deps-dev",
+    "deps",
+    "docker",
+    "export",
+    "i18n",
+    "jellyfin",
+    "page",
+    "release",
+    "security",
+    "seerr"
+  ],
+  "conventionalCommits.gitmoji": false,
+  "files.associations": { "CODEOWNERS": "ignore" }
+}

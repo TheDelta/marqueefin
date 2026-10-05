@@ -1,0 +1,88 @@
+# Comments on a pull request whose title fails, and updates the comment once fixed.
+# pull_request_target, so forks get it too: safe only as long as nothing from the
+# pull request runs (main is checked out, the title comes in through env).
+name: Pull request title help
+run-name: Title help for #${{ github.event.pull_request.number }}
+
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] runs main's code only, see above
+    types: [opened, edited, reopened, synchronize] # a push may add a word to CSpell's list
+
+permissions: {}
+
+concurrency:
+  group: pr-title-help-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    name: Explain the title
+    # Its titles are fine, and it gets no write access here
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write # the comment
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json # devEngines.runtime
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        env:
+          HUSKY: "0"
+
+      - name: Comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ github.event.pull_request.title }}
+          PR: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          marker='<!-- marqueefin:pr-title -->'
+          comments="repos/$GITHUB_REPOSITORY/issues/$PR/comments"
+          id=$(gh api --paginate "$comments" \
+            --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n 1)
+          bot=()
+          [ "$AUTHOR_TYPE" = Bot ] && bot=(--bot)
+          args=(--title "$TITLE" --pr "$PR" --author "$AUTHOR" "${bot[@]}")
+
+          lint_ok=true spell_ok=true
+          printf '%s\n' "$TITLE" | npx --no -- commitlint > lint.txt 2>&1 || lint_ok=false
+          printf '%s\n' "$TITLE" | npx --no -- cspell --no-progress --no-summary --words-only --unique stdin > words.txt || true
+          # Words the pull request adds to the list itself are fine (its config is only read)
+          gh api "repos/$GITHUB_REPOSITORY/contents/cspell.config.yaml?ref=$HEAD_SHA" \
+            --jq .content | base64 -d > pr-cspell.yaml 2> /dev/null || : > pr-cspell.yaml
+          python3 scripts/pr_title.py unknown --words words.txt --config pr-cspell.yaml > unknown.txt
+          [ -s unknown.txt ] && spell_ok=false
+          # A scope the pull request adds to commitlint.config.mjs is fine too (read as text)
+          if [ "$lint_ok" = false ]; then
+            gh api "repos/$GITHUB_REPOSITORY/contents/commitlint.config.mjs?ref=$HEAD_SHA" \
+              --jq .content | base64 -d > pr-commitlint.txt 2> /dev/null || : > pr-commitlint.txt
+            python3 scripts/pr_title.py new-scope --title "$TITLE" --config pr-commitlint.txt \
+              < lint.txt && lint_ok=true
+          fi
+          if [ "$lint_ok" = true ] && [ "$spell_ok" = true ]; then
+            [ -n "$id" ] || exit 0 # a good title from the start: no comment
+            python3 scripts/pr_title.py ok "${args[@]}" > comment.md
+          else
+            [ "$lint_ok" = true ] && args+=(--lint-ok)
+            python3 scripts/pr_title.py fail "${args[@]}" --words unknown.txt < lint.txt > comment.md
+          fi
+
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" \
+              -F body=@comment.md > /dev/null
+          else
+            gh api --method POST "$comments" -F body=@comment.md > /dev/null
+          fi
+          {
+            echo "### Title help"
+            cat comment.md
+          } >> "$GITHUB_STEP_SUMMARY"

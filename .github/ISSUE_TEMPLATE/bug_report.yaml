@@ -1,0 +1,101 @@
+name: 🐛 Bug report
+description: Something doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check the [existing issues](https://github.com/TheDelta/marqueefin/issues) first.
+
+        - Questions and setup help: [Discussions → Q&A](https://github.com/TheDelta/marqueefin/discussions/categories/q-a)
+        - Security problems: please report them privately, see [SECURITY.md](https://github.com/TheDelta/marqueefin/blob/main/SECURITY.md)
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: A clear description of the problem. Screenshots help for problems on the page.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `python export.py --types series`
+        2. Open the page and click …
+        3. …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      multiple: true
+      options:
+        - The export (export.py, its log or errors)
+        - The page in the browser
+        - Requests tab (Seerr)
+        - Docker (schedule, health, notifications)
+        - SFTP upload
+        - Documentation
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Marqueefin version
+      description: "`python export.py --version`, or the version in the page's footer"
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: run
+    attributes:
+      label: How do you run it?
+      options:
+        - Python
+        - Docker, pre-built image (ghcr.io)
+        - Docker, built locally
+    validations:
+      required: true
+
+  - type: input
+    id: jellyfin
+    attributes:
+      label: Jellyfin version
+      placeholder: "10.11.0"
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS (for problems on the page)
+      placeholder: "Firefox 143 on Windows 11"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: The relevant part of the export or container log. **Remove API keys, passwords and private addresses first.**
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues and this hasn't been reported yet.
+          required: true
+        - label: I removed API keys, passwords and other private details from this report.
+          required: true

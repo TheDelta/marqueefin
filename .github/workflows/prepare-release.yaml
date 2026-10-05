@@ -1,0 +1,158 @@
+# Opens the release pull request (version bump, changelog)
+# Merging it creates a new release
+name: Prepare release
+run-name: Prepare release (${{ inputs.version }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "patch, minor, major; rc (next candidate: 1.2.0-rc.1 → rc.2), prepatch, preminor, premajor (first candidate: 1.3.0-rc.1); or an exact version (1.2.0, 1.2.0-rc.1)"
+        required: true
+        default: minor
+        type: string
+
+# The bot pushes and opens the pull request; the workflow's own token only reads
+permissions:
+  contents: read
+  pull-requests: read # authors and closed issues for the changelog
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Release branch and pull request
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main'
+    environment: release # the bot's key; limit the environment to main
+    steps:
+      # Create token for release bot (DolphBit Bot)
+      - name: Bot token
+        id: bot
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.APP_RELEASE_BOT_ID || secrets.APP_RELEASE_BOT_ID }}
+          private-key: ${{ secrets.APP_RELEASE_BOT_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # with the tags, to refuse a version that's taken
+          token: ${{ steps.bot.outputs.token }}
+          persist-credentials: true # zizmor: ignore[artipacked] this job pushes the release branch (no artifacts are uploaded)
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      # CSpell, for the notes
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        env:
+          HUSKY: "0"
+
+      # The token reads authors and closed issues for the changelog
+      - name: Bump the version and CHANGELOG.md
+        id: bump
+        env:
+          HOW: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python scripts/release.py prepare "$HOW")
+          if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "::error::v$version is already tagged"; exit 1
+          fi
+          # Nothing merged since the last release: refuse, except to make that
+          # release candidate final
+          tags=$(git tag --points-at HEAD --list 'v*')
+          if [ -n "$tags" ]; then
+            final_of_candidate=false
+            for tag in $tags; do
+              case "$version:$tag" in
+                *-*:*) ;;
+                *:"v$version"-*) final_of_candidate=true ;;
+              esac
+            done
+            if [ "$final_of_candidate" = false ]; then
+              echo "::error::Nothing merged since $(echo "$tags" | head -n 1): nothing to release"
+              exit 1
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "### $HOW → v$version" >> "$GITHUB_STEP_SUMMARY"
+
+      # The release PR checks fail on a word CSpell doesn't know (lines from squash descriptions aren't checked before)
+      - name: Spell-check the notes
+        run: |
+          npx --no -- cspell --no-progress --no-summary --no-color CHANGELOG.md > spell.txt || true
+          # shellcheck disable=SC2016 # the backticks are Markdown, not a command
+          words=$(sed -nE 's/^[^:]*:([0-9]+):[0-9]+ - Unknown word \(([^)]+)\).*/`\2` (line \1)/p' spell.txt \
+            | paste -sd, - | sed 's/,/, /g')
+          [ -n "$words" ] || exit 0
+          {
+            echo "> [!WARNING]"
+            echo "> **CSpell doesn't know these words in CHANGELOG.md:** $words."
+            echo "> Before merging, reword them on this branch, or add real words to"
+            echo "> \`cspell.config.yaml\` (sorted). The \"Lint and checks\" check fails until then."
+            echo
+          } > spelling.md
+          cat spelling.md >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning file=CHANGELOG.md::Words CSpell doesn't know: $words"
+
+      # Titles without a type or a pull request number (e.g. a squash merge that took a
+      # description line) make poor lines; say so at the top of the pull request
+      - name: Check the commit titles
+        run: |
+          python scripts/release.py titles > titles.md
+          [ -s titles.md ] || exit 0
+          cat titles.md >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning file=CHANGELOG.md::Some commit titles need a look (see the pull request)"
+
+      - name: Release branch and pull request
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          BOT: ${{ steps.bot.outputs.app-slug }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          HOW: ${{ inputs.version }}
+        run: |
+          branch="release/v$VERSION"
+          # The bot's own name and noreply address, so GitHub links its commits to it
+          bot_id=$(gh api "users/${BOT}[bot]" --jq .id)
+          git config user.name "${BOT}[bot]"
+          git config user.email "${bot_id}+${BOT}[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          title="chore(release): v$VERSION"
+          # Not authored by whoever started the run: the squash merge would make them
+          # a co-author, and GitHub can't fully verify a commit whose co-author flags
+          # unsigned commits
+          git commit -am "$title"
+          git push --force origin "$branch" # a re-run for the same version replaces it
+
+          {
+            [ -f spelling.md ] && cat spelling.md
+            [ -s titles.md ] && { cat titles.md; echo; }
+            echo "Merging this pull request releases **v$VERSION**: the tag, the Docker image"
+            echo "and the GitHub release are created from the merge commit."
+            echo
+            echo "The notes below were generated from the pull requests since the last release."
+            echo "Edit \`CHANGELOG.md\` on this branch before merging to reword them, add highlights"
+            echo "or describe breaking changes (the comment under \`[Unreleased]\` says where)."
+            echo
+            echo "Started by @$GITHUB_ACTOR (\`$HOW\`)."
+            echo
+            echo "## Release notes"
+            echo
+            python scripts/release.py notes "$VERSION"
+          } > body.md
+          if gh pr view "$branch" --json state --jq .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --title "$title" --body-file body.md
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file body.md
+          fi
+          echo "Pull request: $(gh pr view "$branch" --json url --jq .url)" >> "$GITHUB_STEP_SUMMARY"

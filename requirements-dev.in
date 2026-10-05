@@ -1,0 +1,8 @@
+# Development tools only. After editing, execute:
+#   .venv/bin/pip-compile --generate-hashes --strip-extras requirements-dev.in
+ruff==0.16.10
+zizmor==1.30.1
+actionlint-py==1.7.12.25
+shellcheck-py==0.11.0.1
+hadolint-py==2.15.1.2
+coverage==7.16.2

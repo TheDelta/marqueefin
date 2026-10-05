@@ -1,0 +1,58 @@
+# Turns on auto-merge for Dependabot's safe updates: patch and minor versions of
+# development tools (npm devDependencies, the Python tools) and actions.
+# They merge by themselves once every required check is green and once approved.
+name: Dependabot auto-merge
+run-name: Auto-merge for ${{ github.event.pull_request.title }}
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  auto-merge:
+    name: Auto-merge safe updates
+    runs-on: ubuntu-24.04
+    # Dependabot's own pull requests, from a branch of this repository
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write # gh pr merge --auto
+      pull-requests: write
+    steps:
+      - name: What's updated
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+
+      # Every update in the pull request must be safe (a group can mix them)
+      - name: Safe?
+        id: safe
+        env:
+          UPDATES: ${{ steps.meta.outputs.updated-dependencies-json }}
+        run: |
+          manual=$(jq -r '.[] | select(
+              ((.updateType // "") | test("semver-(patch|minor)$") | not)
+              or (.packageEcosystem as $e | ["github_actions", "pip", "npm_and_yarn"] | index($e) | not)
+              or (.packageEcosystem == "npm_and_yarn" and .dependencyType != "direct:development")
+            ) | "\(.dependencyName) \(.prevVersion) → \(.newVersion) (\(.packageEcosystem), \(.dependencyType), \(.updateType))"' \
+            <<< "$UPDATES")
+          count=$(jq length <<< "$UPDATES")
+          if [ "$count" -gt 0 ] && [ -z "$manual" ]; then
+            echo "auto=true" >> "$GITHUB_OUTPUT"
+            echo "### Safe: auto-merge once approved and green" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Stays manual"
+              echo
+              while read -r line; do echo "- $line"; done <<< "${manual:-No update details found}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Auto-merge
+        if: steps.safe.outputs.auto == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR"

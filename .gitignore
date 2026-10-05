@@ -1,0 +1,42 @@
+# Secrets
+.env
+.env.*
+compose.override.yaml
+!.env.example
+secrets/
+
+# Exporter output and cache
+.marqueefin_cache/
+collection.html
+demo.html
+*_posters/
+
+# npm, and the bundled script and styles (npm run build)
+node_modules/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors / OS (shared: recommended extensions, commit scopes)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Half-written export
+*.part
+
+# Coverage
+.coverage
+htmlcov/
+
+# Playwright
+test-results/
+playwright-report/
+coverage/

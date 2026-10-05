@@ -1,0 +1,2 @@
+echo "🐕 husky commit-msg: checking the message (Conventional Commits, spelling of the title)..."
+npx --no -- commitlint --edit "$1" && head -n 1 "$1" | npx --no -- cspell --no-progress --no-summary stdin

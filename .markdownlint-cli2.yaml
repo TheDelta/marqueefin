@@ -1,0 +1,16 @@
+gitignore: true
+globs:
+  - "**/*.md"
+ignores:
+  - node_modules/**
+  - .venv/**
+  - CODE_OF_CONDUCT.md # third-party text (Contributor Covenant)
+config:
+  default: true
+  MD013: false
+  MD024:
+    siblings_only: true # each CHANGELOG version has its own "🐛 Fixes"
+  # The README's centred header
+  MD033:
+    allowed_elements: [h1, p, a, img, strong, br, details, summary]
+  MD041: false

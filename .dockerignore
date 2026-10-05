@@ -1,0 +1,10 @@
+# Only what the image needs
+*
+!export.py
+!marqueefin/
+!src/
+!docker/
+!package.json
+!package-lock.json
+docker/README.md
+**/__pycache__

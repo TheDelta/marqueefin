@@ -1,0 +1,33 @@
+# Copy to compose.override.yaml (git-ignored); docker compose merges it in.
+#
+# Reach Jellyfin, Seerr and Gotify by container name on a shared Docker network:
+# their public domains often fail from inside a container ("Host is unreachable").
+# The network is the external one they share with the reverse proxy, e.g.:
+#
+#   services:
+#     jellyfin:
+#       networks: [default, proxy_net]
+#   networks:
+#     proxy_net:
+#       external: true
+#
+# Then in .env (plain HTTP is fine, the traffic stays on the host):
+#
+#   JELLYFIN_URL=http://jellyfin:8096
+#   SEER_URL=http://seerr:5055
+#   GOTIFY_URL=http://gotify
+#   JELLYFIN_PUBLIC_URL=https://jellyfin.example.com   # links on the page
+services:
+  marqueefin:
+    # Another tag than compose.yaml's :latest, e.g. release candidates too:
+    # image: ghcr.io/thedelta/marqueefin:next
+    # Or built from this folder (development): docker compose up -d --build
+    # build: .
+    # image: marqueefin:dev
+    networks:
+      - default
+      - proxy_net
+
+networks:
+  proxy_net:
+    external: true

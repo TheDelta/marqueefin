@@ -1,0 +1,40 @@
+# Builds the page on a schedule and uploads it. Setup: docker/README.md
+services:
+  marqueefin:
+    # The published image (amd64, arm64). Tags: :latest (the newest release), :1 (the
+    # newest 1.x, no breaking changes), :next (release candidates too), :1.2.3
+    # (exactly that). Another tag or building it yourself: compose.override.yaml
+    image: ghcr.io/thedelta/marqueefin:latest
+    # "marqueefin" in `docker ps` and the log instead of "<folder>-marqueefin-1".
+    # Names are unique per host: a second instance needs its own (compose.override.yaml)
+    container_name: marqueefin
+    restart: unless-stopped
+    init: false # the image has tini
+    env_file: .env
+    environment:
+      SCHEDULE: ${SCHEDULE:-15 5 * * *}
+      TZ: ${TZ:-UTC}
+    secrets: # only used with UPLOAD_HOST
+      - upload_key
+      - upload_known_hosts
+    volumes:
+      - marqueefin-data:/data # the page and the cache
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: local
+      options:
+        max-size: 5m
+
+secrets:
+  upload_key:
+    file: ./secrets/upload_key # must be readable by uid 10001
+  upload_known_hosts:
+    file: ./secrets/upload_known_hosts
+
+volumes:
+  marqueefin-data:

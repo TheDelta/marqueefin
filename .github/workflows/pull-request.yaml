@@ -1,0 +1,52 @@
+# The title becomes the squash commit and its changelog line.
+# Pull requests are squash merged and "Prepare release" actions
+# turns it into the CHANGELOG.md line
+name: Pull request
+run-name: ${{ github.event.pull_request.title }}
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    name: PR title
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json # devEngines.runtime
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+        env:
+          HUSKY: "0"
+
+      # Conventional Commits, and spelled right: the title becomes a CHANGELOG.md line, which CSpell checks
+      - name: Conventional Commits title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          lint_ok=true spell_ok=true
+          printf '%s\n' "$TITLE" | npx --no -- commitlint --verbose > lint.txt 2>&1 || lint_ok=false
+          printf '%s\n' "$TITLE" | npx --no -- cspell --no-progress --no-summary --words-only --unique stdin > words.txt || spell_ok=false
+          cat lint.txt
+          [ "$spell_ok" = true ] || echo "Unknown words: $(tr '\n' ' ' < words.txt)"
+          if [ "$lint_ok" = true ] && [ "$spell_ok" = true ]; then exit 0; fi
+          flags=(--words words.txt)
+          [ "$lint_ok" = true ] && flags+=(--lint-ok)
+          python3 scripts/pr_title.py fail --title "$TITLE" --pr "$PR" "${flags[@]}" < lint.txt >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::The title needs a fix (format or spelling): see the comment on the pull request or this run's summary"
+          exit 1

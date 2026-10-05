@@ -1,0 +1,13 @@
+/* The page's styles, bundled by esbuild (npm run build). The order is the
+   cascade: later files win over earlier ones at equal specificity. */
+@import url("./theme.css");
+@import url("./base.css");
+@import url("./cards.css");
+@import url("./requests.css");
+@import url("./detail.css");
+@import url("./seasons.css");
+@import url("./list.css");
+@import url("./settings.css");
+@import url("./dialogs.css");
+@import url("./tooltips.css");
+@import url("./lock.css");

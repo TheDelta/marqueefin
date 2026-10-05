@@ -1,0 +1,13 @@
+# Blank lines are Prettier's job
+extends: stylelint-config-standard
+rules:
+  rule-empty-line-before: null
+  comment-empty-line-before: null
+  at-rule-empty-line-before: null
+  declaration-empty-line-before: null
+  custom-property-empty-line-before: null
+  no-descending-specificity: null # flags intended cascades
+  # env(safe-area-inset-*, 0px) inside calc(), where a bare 0 is invalid
+  length-zero-no-unit:
+    - true
+    - ignoreFunctions: [env]

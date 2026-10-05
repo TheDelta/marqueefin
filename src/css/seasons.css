@@ -1,0 +1,204 @@
+/* Collection links, seasons and status chips */
+/* "Part of" collection card and the back link */
+.collink {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+}
+.collink:hover {
+  border-color: var(--accent);
+}
+.collink .cl {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.collink small {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.collink .chev {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--muted);
+}
+.collink:hover .chev {
+  color: var(--accent);
+}
+.back {
+  all: unset;
+  display: inline-block;
+  margin: 0 0 8px;
+  padding-right: 44px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.back:hover {
+  color: var(--ink);
+}
+.btn {
+  font: 600 0.95rem var(--body);
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.btn:hover {
+  border-color: var(--accent);
+}
+.btn.primary,
+.btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.d h3 {
+  font: 600 0.8rem var(--body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.seasons {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.seasons li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.seasons b {
+  font-weight: 600;
+}
+.sdt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.st {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border: 1px solid currentcolor;
+  border-radius: 99px;
+  padding: 1px 8px;
+}
+.st-available {
+  color: var(--ok);
+}
+.st-airing {
+  color: var(--info);
+}
+.st-partial {
+  color: var(--warn);
+}
+.st-missing {
+  color: var(--bad);
+}
+.st-tba {
+  color: var(--muted);
+}
+.st-part {
+  color: var(--ok);
+  border-style: dashed;
+} /* partly in the library */
+.st .su svg {
+  width: 14px;
+  height: 14px;
+}
+/* Request states: filled, to set them apart from the release chips */
+.st-fill {
+  background: color-mix(in srgb, currentcolor 14%, transparent);
+}
+.sd {
+  color: var(--muted);
+  font-size: 0.88rem;
+  flex-basis: 100%;
+}
+.seasons li.hl {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 3px 0 var(--accent);
+  padding-left: 12px;
+}
+.members {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.members li {
+  border-bottom: 1px solid var(--line);
+}
+.member {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.member .mt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.mside {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.mrate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mrate svg {
+  width: 15px;
+  height: 15px;
+  fill: var(--star);
+}
+.member:hover b {
+  color: var(--accent);
+}
+.d .member img,
+.member .mth,
+.d .collink img,
+.collink .mth {
+  width: 40px;
+  aspect-ratio: 2/3;
+  flex: none;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--bg);
+}

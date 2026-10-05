@@ -1,0 +1,2 @@
+echo "🐕 husky pre-push: running the unit tests (Python, src/js/lib.js)..."
+node --run build && npm test && npm run --silent test:js && echo "✅ husky pre-push: tests passed"

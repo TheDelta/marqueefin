@@ -1,0 +1,12 @@
+[run]
+branch = True
+source = .
+omit =
+    tests/*
+    .venv/*
+    node_modules/*
+
+[report]
+skip_empty = True
+fail_under = 85
+precision = 0

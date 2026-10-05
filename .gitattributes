@@ -1,0 +1,35 @@
+# LF everywhere, whatever core.autocrlf says; cmd.exe needs CRLF
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.py      text diff=python
+*.js      text
+*.css     text diff=css
+*.html    text diff=html
+*.md      text diff=markdown
+*.json    text
+*.svg     text
+*.yml     text
+*.yaml    text
+*.txt     text
+*.sh      text eol=lf
+Dockerfile text eol=lf
+.env.example text
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.zip   binary
+*.gz    binary
+
+package-lock.json -diff linguist-generated

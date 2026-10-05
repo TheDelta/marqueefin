@@ -1,0 +1,47 @@
+/* A page protected by a passphrase: only the form until it's opened (unlock.js) */
+.lock {
+  display: none;
+}
+.locked .lock {
+  display: block;
+  max-width: 440px;
+  margin: 32px 0 64px;
+}
+.locked .controls,
+.locked #grid,
+.locked .newwrap {
+  display: none;
+}
+.lock h2 {
+  font: 700 2rem var(--display);
+  margin: 0 0 6px;
+}
+.lock p {
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+.lockfield {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.lockfield input {
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.lock .act {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.lock output {
+  font-weight: 600;
+}

@@ -1,0 +1,335 @@
+/* The list bar, the list and import dialogs, the state menu */
+.tray {
+  position: fixed;
+  z-index: 6;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px 12px 10px 18px;
+  max-width: calc(100vw - 32px);
+  background: var(--tray-bg);
+  color: var(--tray-ink);
+  border: 1px solid var(--tray-line);
+  border-radius: 12px;
+  box-shadow: var(--tray-shadow);
+}
+.tray[hidden] {
+  display: none;
+}
+.tray .tc {
+  font-weight: 600;
+  margin-right: 4px;
+}
+/* Tray buttons: outlined filter toggle, amber "Your list", dark red "Clear" */
+.tray .tbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--tray-ink);
+  background: var(--tray-btn);
+  border-color: var(--tray-btn-line);
+}
+.tray .tbtn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tray .tbtn:hover {
+  background: var(--tray-btn-hover);
+  border-color: var(--tray-btn-hover-line);
+}
+/* "Show only marked" switched on: inverted, so it doesn't look like "Your list" */
+.tray .tbtn[aria-pressed="true"] {
+  background: var(--tray-ink);
+  border-color: var(--tray-ink);
+  color: var(--tray-bg);
+}
+.tray .tmain {
+  background: var(--tray-main);
+  border-color: var(--tray-main);
+  color: var(--tray-main-ink);
+}
+.tray .tmain:hover {
+  background: var(--tray-main-hover);
+  border-color: var(--tray-main-hover);
+}
+.tray .tdanger {
+  background: var(--tray-danger);
+  border-color: var(--tray-danger-line);
+  color: var(--tray-danger-ink);
+}
+.tray .tdanger:hover {
+  background: var(--tray-danger-hover);
+  border-color: var(--tray-danger-hover-line);
+}
+.x {
+  padding: 28px;
+  position: relative;
+}
+.x h2 {
+  font: 800 clamp(2rem, 5vw, 2.6rem)/0.95 var(--display);
+  margin: 0 0 8px;
+  padding-right: 40px;
+}
+.x .meta {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.x label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.xopts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  margin-bottom: 10px;
+}
+.x textarea {
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  font:
+    400 0.88rem/1.5 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+.x .act {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.x .ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+#settings {
+  width: min(480px, calc(100vw - 32px));
+}
+.seth {
+  font: 600 0.8rem var(--body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 22px 0 8px;
+}
+.hint2 {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.ximport {
+  margin-left: auto;
+}
+#import textarea {
+  min-height: 180px;
+}
+
+/* The state menu of a title on your list (card corner, list dialog) */
+.markmenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 30%);
+}
+.markmenu[hidden] {
+  display: none;
+}
+.markmenu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 600 0.9rem var(--body);
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+.markmenu button:hover,
+.markmenu button:focus-visible {
+  background: var(--bg);
+  outline: none;
+}
+.markmenu [data-set="m"] svg {
+  color: var(--accent);
+}
+.markmenu [data-set="o"] svg {
+  color: var(--info);
+}
+.markmenu [data-set="w"] svg {
+  color: var(--ok);
+}
+.markmenu [aria-checked="true"]::after {
+  content: "\2713";
+  margin-left: auto;
+  color: var(--muted);
+}
+.markmenu .rm {
+  color: var(--bad);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 6px 6px;
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+/* The list in its dialog: grouped by state, one compact row per title */
+.xlist {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 46vh;
+  overflow: auto;
+}
+.xlist:empty {
+  display: none;
+}
+.xgroup h3 {
+  font: 600 0.8rem var(--body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 12px 0 4px;
+}
+.xgroup ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.xrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.xrow img,
+.xrow .mth {
+  width: 30px;
+  aspect-ratio: 2/3;
+  flex: none;
+  border-radius: 3px;
+  object-fit: cover;
+  background: var(--bg);
+}
+.xrow .xt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  line-height: 1.3;
+}
+.xrow .xt b {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xstate {
+  --c: var(--accent);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 0.8rem var(--body);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  border: 1px solid var(--c);
+  border-radius: 99px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.xg-o .xstate {
+  --c: var(--info);
+}
+.xg-w .xstate {
+  --c: var(--ok);
+}
+.xg-m .xstate svg {
+  fill: currentcolor;
+}
+
+/* Comparing lists: the same rows, a chip per side ("You: Owned", "Them: Wanted") */
+.clist {
+  max-height: 64vh;
+}
+.cmpopen {
+  font: 600 1rem var(--body);
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: start;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmpopen:hover {
+  text-decoration: underline;
+}
+.cmpsts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.cmpst {
+  --c: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 600 0.75rem var(--body);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  border: 1px solid var(--c);
+  border-radius: 99px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.cmpst svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+}
+.cmp-m svg {
+  fill: currentcolor;
+}
+.cmp-o {
+  --c: var(--info);
+}
+.cmp-w {
+  --c: var(--ok);
+}

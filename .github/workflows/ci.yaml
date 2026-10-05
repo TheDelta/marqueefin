@@ -1,0 +1,223 @@
+# Checks on every push to main and every pull request
+# Locally: `npm run check` and `npm run test:e2e`
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: "0" # no Git hooks on the runner
+
+jobs:
+  checks:
+    name: Lint and checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json # devEngines.runtime
+          cache: npm
+
+      - name: Install the tools (package-lock.json, requirements-dev.txt)
+        run: |
+          npm ci --ignore-scripts
+          python -m pip install --require-hashes -r requirements-dev.txt
+
+      - name: npm run check
+        run: npm run check -- --no-tests
+
+      # Known-vulnerable or impostor action commits; only this step gets the token
+      - name: zizmor (online audits)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: zizmor .github
+
+  tests:
+    name: Tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.14"] # oldest and newest supported
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json # devEngines.runtime
+          cache: npm
+
+      # Floating UI and the fonts, which the rendering tests expect
+      - run: npm ci --omit=dev --ignore-scripts
+
+      # The page's script and styles, which the rendering tests inline
+      - run: node --run build
+
+      - run: python -m pip install --require-hashes -r requirements-dev.txt
+
+      - name: Unit and integration tests
+        run: python -m coverage run -m unittest discover -s tests -t . -v
+
+      - name: Coverage
+        run: |
+          python -m coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+          python -m coverage report
+
+      # For SonarQube Cloud (sonar.yaml), from one Python version
+      - name: Coverage report (XML)
+        if: ${{ !cancelled() && matrix.python == '3.14' }}
+        run: python -m coverage xml -o coverage/python/coverage.xml --fail-under=0
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() && matrix.python == '3.14' }}
+        with:
+          name: coverage-python
+          path: coverage/python/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13" # builds the demo page
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json # devEngines.runtime
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: JavaScript unit tests (src/js/lib.js, with coverage)
+        run: npm run test:js
+
+      # For SonarQube Cloud (sonar.yaml)
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage-js
+          path: coverage/js/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests (Playwright, with coverage of src/js)
+        run: npm run test:e2e
+
+      - name: Coverage in the run summary
+        if: ${{ !cancelled() }}
+        run: |
+          [ -f coverage/e2e/details.md ] || exit 0
+          cat coverage/e2e/details.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Open index.html; lcov.info is for SonarQube Cloud (sonar.yaml)
+      - name: Coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-e2e
+          path: coverage/e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Report on failure (traces, screenshots)
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: false
+          load: true # into the runner's Docker, for the scan and the smoke test
+          tags: marqueefin:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: The image runs
+        run: docker run --rm --entrypoint python marqueefin:ci /app/export.py --version
+
+      # Hardened like compose.yaml, against the tests' fake Jellyfin / Seerr
+      - name: Container test (one run, then scheduled and healthy)
+        run: |
+          python3 -m tests.fake_server 8099 &
+          docker volume create smoke
+          run=(docker run --network host --read-only --tmpfs /tmp --cap-drop ALL
+            --security-opt no-new-privileges -v smoke:/data
+            -e JELLYFIN_URL=http://127.0.0.1:8099 -e JELLYFIN_API_KEY=test-jellyfin-key
+            -e SEER_URL=http://127.0.0.1:8099/seerr -e SEER_API_KEY=test-seerr-key
+            -e EXPORT_TITLE_LANGUAGE=de)
+          "${run[@]}" --rm marqueefin:ci
+          docker run --rm -v smoke:/data --entrypoint sh marqueefin:ci \
+            -c 'test -s /data/collection.html && test -f /data/.last-success'
+          "${run[@]}" -d --name scheduled -e SCHEDULE="0 5 * * *" marqueefin:ci
+          status=starting
+          for _ in $(seq 60); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' scheduled)
+            [ "$status" = starting ] || break
+            sleep 2
+          done
+          docker logs scheduled
+          echo "Health: $status"
+          [ "$status" = healthy ]
+
+      - name: Vulnerability scan (Trivy)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: marqueefin:ci
+          scanners: vuln # the image holds no secrets; the repository has secret scanning
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
