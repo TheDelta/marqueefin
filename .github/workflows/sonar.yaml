@@ -51,7 +51,9 @@ jobs:
             echo "::error::Set the variables SONAR_ORGANIZATION and SONAR_PROJECT_KEY (Settings → Secrets and variables → Actions)"
             exit 1
           fi
-          args="-Dsonar.organization=$ORGANIZATION -Dsonar.projectKey=$PROJECT"
+          # The commit CI ran on: the scanner would take GITHUB_SHA, which for workflow_run
+          # is main's newest commit, and report the result there instead of on the pull request
+          args="-Dsonar.organization=$ORGANIZATION -Dsonar.projectKey=$PROJECT -Dsonar.scm.revision=$SHA"
           if [ "$EVENT" = pull_request ]; then
             pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 200 \
               --json number,headRefOid,headRefName,baseRefName \
