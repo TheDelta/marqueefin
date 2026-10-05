@@ -13,7 +13,7 @@ import unittest
 from datetime import datetime, timezone
 from unittest import mock
 
-from marqueefin import __version__
+from marqueefin import __version__, render
 from marqueefin.cli import load_dotenv, parse_args
 from marqueefin.render import NODE_MODULES, render_html
 from marqueefin.seal import unseal
@@ -115,6 +115,25 @@ class RenderHtml(unittest.TestCase):
         page = self.render([])
         self.assertIn("@floating-ui/dom", page)
         self.assertIn("Permission is hereby granted", page)
+
+
+class Credit(unittest.TestCase):
+    """The footer's project link: "GitHub" only when it really points there."""
+
+    def credit(self, url):
+        with mock.patch("marqueefin.render.PROJECT_URL", url):
+            return render.credit_html()
+
+    def test_github(self):
+        self.assertIn(">GitHub</a>", self.credit("https://github.com/TheDelta/marqueefin"))
+
+    def test_github_elsewhere_in_the_address_is_not_github(self):
+        for url in ("https://evil.example/github.com", "https://github.com.evil.example/x"):
+            with self.subTest(url=url):
+                self.assertIn(">Source code</a>", self.credit(url))
+
+    def test_no_link_without_a_url(self):
+        self.assertNotIn("<a ", self.credit(""))
 
 
 class ProtectedPage(unittest.TestCase):

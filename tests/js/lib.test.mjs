@@ -499,11 +499,11 @@ describe("surprise me", () => {
       "b",
     ); // "a" was last time
     assert.equal(
-      L.pickRandom(list, "a", () => 0.99),
+      L.pickRandom(list, "a", (n) => n - 1),
       "c",
     );
     assert.equal(
-      L.pickRandom(["a"], "a", () => 0.5),
+      L.pickRandom(["a"], "a", () => 0),
       "a",
     ); // the only one
     assert.equal(L.pickRandom([], undefined), undefined);
@@ -598,5 +598,23 @@ describe("the language in the address", () => {
       lang: "es",
       href: "https://x.example/p/?a=1",
     });
+  });
+});
+
+describe("values from the data in the page", () => {
+  test("percent: a whole number, whatever the data holds", () => {
+    assert.equal(L.percent(65), 65);
+    assert.equal(L.percent("64.6"), 65);
+    assert.equal(L.percent('"><img src=x onerror=alert(1)>'), 0);
+    assert.equal(L.percent(undefined), 0);
+  });
+  test("pickRandom's default draws from crypto, within the list", () => {
+    for (let i = 0; i < 50; i++) assert.ok(["a", "b", "c"].includes(L.pickRandom(["a", "b", "c"])));
+  });
+  test("randomIndex: every index of the range, none outside", () => {
+    const seen = new Set();
+    for (let i = 0; i < 200; i++) seen.add(L.randomIndex(3));
+    assert.deepEqual([...seen].sort(), [0, 1, 2]);
+    assert.equal(L.randomIndex(1), 0);
   });
 });

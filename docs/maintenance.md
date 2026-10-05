@@ -114,7 +114,7 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
     tab), `links.yaml` (lychee, `lychee.toml`).
 - **Rulesets** (set up in GitHub, not in the repository) on `main`:
   - `main`: pull requests only, squash, signed and linear history, no force push or
-    deletion, and the six job names of ci.yaml and pull-request.yaml as required
+    deletion, and the seven job names of ci.yaml and pull-request.yaml as required
     checks, from GitHub Actions only, with "require branches to be up to date", so
     every merged state has passed CI (what gets released is what was tested). **No
     bypass**, not even for admins. Renaming a job means updating it.
@@ -179,16 +179,19 @@ false` on every checkout that doesn't push; top-level `permissions` minimal,
   staged files, fixes restaged, one tool at a time), commit-msg runs commitlint,
   pre-push builds the page, then runs the Python and `src/js/lib.js` unit tests. The Docker build installs
   with `--ignore-scripts`, CI sets `HUSKY=0`.
-- **SonarQube Cloud**, analyzed in CI (`sonar.yaml`, `sonar-project.properties`) for
-  the coverage: automatic analysis can't read coverage reports. CI's jobs upload
+- **SonarQube Cloud**, analyzed in CI (ci.yaml's `sonar` job, `sonar-project.properties`)
+  for the coverage: automatic analysis can't read coverage reports. CI's jobs upload
   `coverage-python` (`coverage.xml`, Python 3.14), `coverage-js` (`npm run test:js`
   writes `coverage/js/lcov.info`) and `coverage-e2e` (`coverage/e2e/lcov.info`).
-  `sonar.yaml` runs on `workflow_run` after CI, so forks' pull requests are analyzed
-  with the token their own runs don't get; safe because nothing of the pull request
-  runs: the scanner only reads the checkout (`allow-unsafe-pr-checkout`, zizmor's
-  dangerous-triggers ignored with that reason), the pull request number comes from the
-  API by the commit (not from the run's data), and only the three report files are
-  copied out of the artifacts. Organization and project key are repository variables
+  Only `main` and pull requests from this repository's branches are analyzed; forks
+  are skipped. It once ran on `workflow_run` to analyze forks with the token, but the
+  scanner reads its settings (`sonar-project.properties`) from the checkout, so a
+  fork could steer a run that holds the token (CodeQL's untrusted checkout, Scorecard's
+  Dangerous-Workflow). Forks show up in `main`'s analysis after the merge. On pull
+  requests the job waits for the quality gate (`sonar.qualitygate.wait`), so the job
+  itself is the required check: skipped for a fork, it passes, while the app's
+  "SonarCloud Code Analysis" check would never come and block the merge. Organization
+  and project key are repository variables
   (`SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY`), so the test and the public repository
   share the file. `main`'s analyses pass `sonar.projectVersion` (read with `sed`, no
   repository code runs), so with New Code = "Previous version" SonarQube shows

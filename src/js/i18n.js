@@ -13,13 +13,15 @@ export const autoLang = pickLanguage(
 function choiceFromUrl() {
   const { lang, href } = langFromUrl(location.href);
   if (!lang) return null;
-  save(LANG, lang);
   try {
     history.replaceState(null, "", href);
   } catch {
     /* file:// in some browsers: the parameter stays, which is harmless */
   }
-  return lang;
+  // validate the lang code
+  const known = ["auto", ...Object.keys(CATALOGS)].find((code) => code === lang);
+  if (known) save(LANG, known);
+  return known || null;
 }
 export const langChoice = choiceFromUrl() || load(LANG) || "auto";
 export const I18N = createI18n(CATALOGS, CATALOGS[langChoice] ? langChoice : autoLang);

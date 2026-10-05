@@ -2,7 +2,7 @@
 import { CONFIG, FLAGS, byId } from "./dom.js";
 import { dayText, fmtDate, fmtStamp, langName, num, t } from "./i18n.js";
 import { EYE } from "./icons.js";
-import { esc, isoDay, seasonRanges, sortTitle } from "./lib.js";
+import { esc, isoDay, percent, seasonRanges, sortTitle } from "./lib.js";
 import { state } from "./state.js";
 
 export const inTab = (d) =>
@@ -44,7 +44,7 @@ export const changedHtml = (d) => {
 export const flag = (code) => {
   const name = esc(code ? langName(code) : t("detail.unknownLanguage"));
   return FLAGS[code]
-    ? `<img class="flag" src="${FLAGS[code]}" alt="${name}" data-tip="${name}">`
+    ? `<img class="flag" src="${esc(FLAGS[code])}" alt="${name}" data-tip="${name}">`
     : `<span class="lang">${name}</span>`;
 };
 export const moreChip = (names) =>
@@ -73,7 +73,7 @@ export const ratingTip = (it) =>
 export const seasonLabel = (ns) => t("card.seasons", { n: ns.length, list: seasonRanges(ns) });
 // Eye for a watched (or started) title or season, e.g. in a request row
 export function eyeIcon(w, pct) {
-  return `<span class="su ${w.full ? "su-watched" : "su-partial"}" data-tip="${esc(w.label)}">${EYE}${w.full ? "" : pct + "%"}<span class="vh">${esc(w.label)}</span></span>`;
+  return `<span class="su ${w.full ? "su-watched" : "su-partial"}" data-tip="${esc(w.label)}">${EYE}${w.full ? "" : percent(pct) + "%"}<span class="vh">${esc(w.label)}</span></span>`;
 }
 export function thumb(it) {
   return it.poster

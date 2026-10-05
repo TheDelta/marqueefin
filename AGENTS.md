@@ -86,7 +86,7 @@ Dockerfile           python:3.13-alpine (pinned by digest), non-root (uid 10001)
 compose.yaml         scheduled service with SFTP upload secrets and hardening
 docker/              entrypoint / run / upload / healthcheck / notify + README (setup)
 docs/                exporter.md, page.md, maintenance.md: the detail (see the end)
-.github/             workflows (ci, pull-request, prepare-release, release, sonar, ...),
+.github/             workflows (ci, pull-request, prepare-release, release, ...),
                      CODEOWNERS, Dependabot, issue forms, PR template; CONTRIBUTING /
                      SECURITY / CODE_OF_CONDUCT.md in the root
 scripts/demo_page.py a page with made-up titles and drawn posters (no server needed);

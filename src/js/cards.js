@@ -13,7 +13,7 @@ import {
 } from "./format.js";
 import { monthYear, num, resText, t, when } from "./i18n.js";
 import { EYE, HEART, STAR, markIcon } from "./icons.js";
-import { esc, initials, searchText, seasonsStatus } from "./lib.js";
+import { esc, initials, percent, searchText, seasonsStatus } from "./lib.js";
 import { setMark } from "./list.js";
 import { MARK_LABEL, marks, markWhenText, myRating } from "./marks.js";
 import { openMarkMenu } from "./menu.js";
@@ -81,7 +81,7 @@ function posterBadges(it, status = it, q = it.media) {
   const w = watchState(status);
   if (w)
     b.push(
-      `<span class="pb pb-status ${w.full ? "pb-watched" : "pb-partial"}" data-tip="${esc(w.label)}">${EYE}${w.full ? "" : status.watchedPct + "%"}</span>`,
+      `<span class="pb pb-status ${w.full ? "pb-watched" : "pb-partial"}" data-tip="${esc(w.label)}">${EYE}${w.full ? "" : percent(status.watchedPct) + "%"}</span>`,
     );
   if (status.fav)
     b.push(`<span class="pb pb-status pb-fav" data-tip="${esc(t("favorite"))}">${HEART}</span>`);

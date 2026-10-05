@@ -91,7 +91,7 @@ jobs:
           python -m coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
           python -m coverage report
 
-      # For SonarQube Cloud (sonar.yaml), from one Python version
+      # For SonarQube Cloud, from one Python version
       - name: Coverage report (XML)
         if: ${{ !cancelled() && matrix.python == '3.14' }}
         run: python -m coverage xml -o coverage/python/coverage.xml --fail-under=0
@@ -126,7 +126,7 @@ jobs:
       - name: JavaScript unit tests (src/js/lib.js, with coverage)
         run: npm run test:js
 
-      # For SonarQube Cloud (sonar.yaml)
+      # For SonarQube Cloud
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() }}
         with:
@@ -147,7 +147,7 @@ jobs:
           [ -f coverage/e2e/details.md ] || exit 0
           cat coverage/e2e/details.md >> "$GITHUB_STEP_SUMMARY"
 
-      # Open index.html; lcov.info is for SonarQube Cloud (sonar.yaml)
+      # Open index.html; lcov.info is for SonarQube Cloud
       - name: Coverage report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -221,3 +221,88 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
+
+  # SonarQube Cloud: the code analysis with the coverage of the jobs above, for main and
+  # for pull requests from this repository's branches. Pull requests from forks get no
+  # secrets and are skipped (the job passes); main's analysis after the merge covers
+  # them. Never from a workflow_run or pull_request_target with the pull request's code:
+  # the scanner reads its settings from the checkout, with the token at hand.
+  # Needs the secret SONAR_TOKEN and the variables SONAR_ORGANIZATION, SONAR_PROJECT_KEY;
+  # without the token it does nothing.
+  sonar:
+    name: SonarQube Cloud
+    needs: [tests, browser]
+    if: >-
+      !cancelled() && (github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    steps:
+      - name: What to analyze
+        id: target
+        env:
+          TOKEN_SET: ${{ secrets.SONAR_TOKEN != '' }}
+          ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          PROJECT: ${{ vars.SONAR_PROJECT_KEY }}
+        run: |
+          if [ "$TOKEN_SET" != true ]; then
+            # Dependabot's pull requests too: they get Dependabot secrets, not these
+            echo "::notice::No SONAR_TOKEN secret: the analysis is skipped"
+            exit 0
+          fi
+          if [ -z "$ORGANIZATION" ] || [ -z "$PROJECT" ]; then
+            echo "::error::Set the variables SONAR_ORGANIZATION and SONAR_PROJECT_KEY (Settings → Secrets and variables → Actions)"
+            exit 1
+          fi
+          args="-Dsonar.organization=$ORGANIZATION -Dsonar.projectKey=$PROJECT"
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            # The job's result is the quality gate's, so it can be a required check
+            args="$args -Dsonar.qualitygate.wait=true"
+          fi
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.target.outputs.args
+        with:
+          fetch-depth: 0 # blame, and main to compare a pull request with
+          persist-credentials: false
+
+      # main's analyses carry the version, so SonarQube Cloud marks each release
+      - name: Version (main)
+        id: version
+        if: steps.target.outputs.args && github.event_name == 'push'
+        run: |
+          version=$(sed -nE 's/^__version__ = "([0-9A-Za-z.+-]+)"$/\1/p' marqueefin/__init__.py)
+          if [ -n "$version" ]; then
+            echo "args=-Dsonar.projectVersion=$version" >> "$GITHUB_OUTPUT"
+            echo "### main at $version" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: steps.target.outputs.args
+        continue-on-error: true
+        with:
+          name: coverage-python
+          path: coverage/python
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: steps.target.outputs.args
+        continue-on-error: true
+        with:
+          name: coverage-js
+          path: coverage/js
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: steps.target.outputs.args
+        continue-on-error: true
+        with:
+          name: coverage-e2e
+          path: coverage/e2e
+
+      - name: Analysis
+        if: steps.target.outputs.args
+        uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9 # v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: ${{ steps.target.outputs.args }} ${{ steps.version.outputs.args }}
