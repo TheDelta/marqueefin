@@ -207,6 +207,7 @@ words:
   - pyupgrade
   - qualitygate
   - Qube
+  - rawfile
   - reqs
   - rhysd
   - saltwind
@@ -257,6 +258,7 @@ words:
   - TMDB's
   - tmpfs
   - tmpkey
+  - tostring
   - Trivy
   - truehd
   - tshow

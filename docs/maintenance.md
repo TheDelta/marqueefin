@@ -59,6 +59,9 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
   limited to this repository, contents and pull requests; its branch and pull request
   start CI and the title check like anyone's, and it's the author of the release
   commit (never whoever started the run: see the co-author note in the workflow).
+  The bot makes that commit through the Git database API (tree, commit, then the
+  branch), not with `git push`: GitHub signs a commit a GitHub App creates that way,
+  so it shows as Verified, and the checkout keeps no credentials.
   The workflow's own token only reads. The release image is built without the Actions
   cache (zizmor: cache poisoning).
 - Pushing a tag by hand (`git tag v1.2.3 && git push origin v1.2.3`) still releases;

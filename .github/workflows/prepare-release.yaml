@@ -38,11 +38,11 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
 
+      # Nothing is pushed from here: the bot makes the commit through the API
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # with the tags, to refuse a version that's taken
-          token: ${{ steps.bot.outputs.token }}
-          persist-credentials: true # zizmor: ignore[artipacked] this job pushes the release branch (no artifacts are uploaded)
+          persist-credentials: false
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -117,22 +117,33 @@ jobs:
       - name: Release branch and pull request
         env:
           GH_TOKEN: ${{ steps.bot.outputs.token }}
-          BOT: ${{ steps.bot.outputs.app-slug }}
           VERSION: ${{ steps.bump.outputs.version }}
           HOW: ${{ inputs.version }}
         run: |
           branch="release/v$VERSION"
-          # The bot's own name and noreply address, so GitHub links its commits to it
-          bot_id=$(gh api "users/${BOT}[bot]" --jq .id)
-          git config user.name "${BOT}[bot]"
-          git config user.email "${bot_id}+${BOT}[bot]@users.noreply.github.com"
-          git switch -c "$branch"
           title="chore(release): v$VERSION"
-          # Not authored by whoever started the run: the squash merge would make them
-          # a co-author, and GitHub can't fully verify a commit whose co-author flags
-          # unsigned commits
-          git commit -am "$title"
-          git push --force origin "$branch" # a re-run for the same version replaces it
+          # The commit is made through the API, on top of main: GitHub signs what a
+          # GitHub App commits that way (Verified), and its author is the bot. Not
+          # whoever started the run: the squash merge would make them a co-author,
+          # and GitHub can't fully verify a co-author who flags unsigned commits.
+          repo="repos/$GITHUB_REPOSITORY"
+          base=$(git rev-parse HEAD)
+          tree=$(git diff --name-only -z | while IFS= read -r -d '' path; do
+              jq -n --arg path "$path" --rawfile content "$path" \
+                '{path: $path, mode: "100644", type: "blob", content: $content}'
+            done | jq -s --arg base "$base" '{base_tree: $base, tree: .}' \
+            | gh api "$repo/git/trees" --input - --jq .sha)
+          commit=$(jq -n --arg msg "$title" --arg tree "$tree" --arg base "$base" \
+              '{message: $msg, tree: $tree, parents: [$base]}' \
+            | gh api "$repo/git/commits" --input - --jq .sha)
+          # A re-run for the same version replaces the branch, in one step (a branch
+          # set back to main first would close its pull request)
+          if gh api "$repo/git/ref/heads/$branch" --silent 2>/dev/null; then
+            gh api -X PATCH "$repo/git/refs/heads/$branch" -f sha="$commit" -F force=true --silent
+          else
+            gh api "$repo/git/refs" -f ref="refs/heads/$branch" -f sha="$commit" --silent
+          fi
+          echo "Commit: $(gh api "$repo/commits/$commit" --jq '.html_url + " (verified: " + (.commit.verification.verified | tostring) + ")"')" >> "$GITHUB_STEP_SUMMARY"
 
           {
             [ -f spelling.md ] && cat spelling.md
