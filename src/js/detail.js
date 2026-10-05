@@ -74,7 +74,7 @@ function seasonRow(s, highlight) {
         .join(", "),
     );
   const aired = s.date ? `<span class="sdt">${esc(monthYear(s.date))}</span>` : "";
-  return `<li${highlight?.includes(s.n) ? ' class="hl"' : ""}><b>${esc(seasonName(s))}</b>${aired}<span class="st st-${s.status}">${esc(label)}</span>${seasonUser(s)}<span class="sd">${parts(bits)}</span></li>`;
+  return `<li${highlight?.includes(s.n) ? ' class="hl"' : ""}><b>${esc(seasonName(s))}</b>${aired}<span class="st st-${esc(s.status)}">${esc(label)}</span>${seasonUser(s)}<span class="sd">${parts(bits)}</span></li>`;
 }
 
 // Eye (watched / how far) and heart (favorite) for one season
