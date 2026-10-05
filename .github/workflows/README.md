@@ -92,8 +92,8 @@ pull request.
     fixes (`scripts/changelog.py`; the token reads them from GitHub).
   - Bumps `__version__` in `marqueefin/__init__.py` and, for a final version, turns
     `[Unreleased]` into the version's section (`scripts/release.py`).
-  - Commits it as the bot, so the squash merge on `main` is fully verified. The
-    pull request says who started it. (Authored by that person, the squash merge
+  - Commits it as the bot, through the API, so GitHub signs it (Verified) and the
+    squash merge on `main` is fully verified. The pull request says who started it. (Authored by that person, the squash merge
     would list them as a co-author, and GitHub can't verify a co-author's
     signature: "partially verified" for anyone who flags unsigned commits.)
   - Spell-checks the new notes. Words CSpell doesn't know (from squash-description
