@@ -158,6 +158,14 @@ false` on every checkout that doesn't push; top-level `permissions` minimal,
   pin, `tests/test_project.py` fails on a range), Python tools by hash, base images by
   digest, actions by SHA. The one range is `devEngines.runtime` (`^24`): the newest
   Node 24 LTS.
+- **`overrides` in `package.json`** lift a transitive package to its first patched
+  version when the parent's range keeps Dependabot from updating it. The key carries
+  the vulnerable range (`"pkg@<1.2.3": "1.2.3"`), so the override applies only while the
+  parent still asks for an affected version and never holds back a newer one; the value
+  is exact like every other pin. Only override when the parent keeps working with that
+  version (read the changelog, run `npm run check`); if it doesn't, wait for the parent.
+  Drop the override once the parent allows the fix (`npm ls <pkg>` no longer says
+  "overridden").
 - **Release supply chain:** the image carries an SBOM and BuildKit provenance, and
   (public repository) a signed GitHub build attestation:
   `gh attestation verify oci://ghcr.io/<owner>/<repo>:1.2.3 --owner <owner>`.
