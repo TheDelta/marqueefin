@@ -132,7 +132,7 @@ class DependenciesArePinned(unittest.TestCase):
         pkg = json.loads(read("package.json"))
         ranges = {
             name: spec
-            for section in ("dependencies", "devDependencies")
+            for section in ("dependencies", "devDependencies", "overrides")
             for name, spec in pkg.get(section, {}).items()
             if not self.EXACT.fullmatch(spec)
         }

@@ -7,6 +7,8 @@ import:
   - "@cspell/dict-es-es/cspell-ext.json"
 ignoreRegExpList:
   - uses:\s*\S+
+  # Package names in Dependabot's titles ("bump a, b and c from …"), which become commits and CHANGELOG.md lines
+  - (?<=\bbump )[@\w./-]+(?:(?:, | and )[@\w./-]+)*
 overrides:
   - filename: "**/.github/workflows/*.yaml"
     dictionaries:
@@ -33,6 +35,7 @@ ignorePaths:
   - secrets/**
   - .env
   - node_modules/**
+  - package.json
   - package-lock.json
   - .venv/**
   - CODE_OF_CONDUCT.md
