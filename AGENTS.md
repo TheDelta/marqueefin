@@ -80,7 +80,7 @@ package.json         Floating UI for the page and the JS dev tools (+ package-lo
 requirements-dev.in  the Python dev tools (Ruff, zizmor, actionlint, ShellCheck, Hadolint,
                      coverage); requirements-dev.txt: the same pinned with hashes
 .env.example         settings template (copy to .env)
-Dockerfile           python:3.13-alpine (pinned by digest), non-root (uid 10001), tini,
+Dockerfile           python alpine (pinned by digest), non-root (uid 10001), tini,
                      supercronic, no pip; a Node build stage bundles the page and
                      installs Floating UI and the fonts
 compose.yaml         scheduled service with SFTP upload secrets and hardening

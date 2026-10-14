@@ -6,7 +6,7 @@ password. Without a schedule it runs once and exits.
 
 ```text
 compose.yaml             the service: schedule, secrets, hardening
-Dockerfile               python:3.13-alpine, non-root (uid 10001), tini, supercronic;
+Dockerfile               python on Alpine, non-root (uid 10001), tini, supercronic;
                          a Node build stage bundles the page's script and styles
                          and installs Floating UI and the fonts (package-lock.json)
 docker/entrypoint.sh     run once, or hand the schedule to supercronic
@@ -442,10 +442,10 @@ Why the image and this setup are built the way they are (for contributors):
 - **Networking:** services on the same host should be reached by container name on a
   shared Docker network (`compose.override.example.yaml`, example `proxy_net` shared with a reverse proxy such as Caddy); public domains often fail
   from containers with errno 113 (macvlan reverse proxies, host firewalls).
-- **Base images** are a moving tag pinned by digest (`python:3.13-alpine@sha256:…`,
+- **Base images** are a moving tag pinned by digest (`python:<version>-alpine@sha256:…`,
   `node:24-alpine@sha256:…`): reproducible builds, and Dependabot proposes the new
   digest when the tag moves (new Python patch, new Alpine). Tags that name an Alpine
-  version (`3.13.13-alpine3.22`) stop getting builds when Alpine moves on, and
+  version (`<patch>-alpine<x.y>`) stop getting builds when Alpine moves on, and
   Dependabot keeps the old suffix: that's how the image once sat on Alpine 3.22 with
   10 fixed-but-unpatched OpenSSL / util-linux issues. Every build also runs `apk
 upgrade`, and pip is removed (nothing installs packages at runtime; Trivy flagged
