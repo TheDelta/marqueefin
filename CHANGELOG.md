@@ -31,6 +31,18 @@ release's notes on GitHub are its section here.
     🔒 Security, 📚 Documentation, 📦 Dependencies, 🧰 Maintenance.
 -->
 
+## [1.0.1] - 2026-10-14
+
+### 📦 Dependencies
+
+- Bump python to 3.14-alpine & use .python-version by [@TheDelta](https://github.com/TheDelta) in [#14](https://github.com/TheDelta/marqueefin/pull/14)
+- Bump the dev-tools group across 1 directory with 4 updates by [@dependabot](https://github.com/apps/dependabot) in [#11](https://github.com/TheDelta/marqueefin/pull/11)
+- Override vulnerable transitive packages by [@TheDelta](https://github.com/TheDelta) in [#15](https://github.com/TheDelta/marqueefin/pull/15)
+
+### 🧰 Maintenance
+
+- **release:** Annotate image index -> package page has a description by [@TheDelta](https://github.com/TheDelta) in [#10](https://github.com/TheDelta/marqueefin/pull/10)
+
 ## [1.0.0] - 2026-10-05
 
 The first public release. Marqueefin exports a whole Jellyfin library into one
@@ -89,5 +101,6 @@ list and compare it with yours.
 - **ci:** Report SQ Cloud on the pull request's commit by [@TheDelta](https://github.com/TheDelta) in [#5](https://github.com/TheDelta/marqueefin/pull/5)
 - **release:** Let the bot commit through the api, so it's verified by [@TheDelta](https://github.com/TheDelta) in [#8](https://github.com/TheDelta/marqueefin/pull/8)
 
-[Unreleased]: https://github.com/TheDelta/marqueefin/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/TheDelta/marqueefin/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/TheDelta/marqueefin/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/TheDelta/marqueefin/releases/tag/v1.0.0
