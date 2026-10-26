@@ -53,51 +53,81 @@ jobs:
         run: zizmor .github
 
   tests:
-    name: Tests (Python ${{ matrix.python }})
+    # Named oldest / newest / image, not by version: the names are required checks,
+    # and python-versions.json moves (python-versions.yaml)
+    name: Tests (${{ matrix.python }} Python)
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"] # oldest and newest supported
+        python: [oldest, newest, image]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
+      # The image's Python (.python-version, the Dockerfile's; a test keeps them
+      # equal) only when it's neither the oldest nor the newest: then the version
+      # stays empty and the job passes without running the steps below
+      - name: Python version (python-versions.json, .python-version)
+        id: python
+        env:
+          WHICH: ${{ matrix.python }}
+        run: |
+          if [ "$WHICH" = image ]; then
+            version=$(tr -d '[:space:]' < .python-version)
+            also=$(jq -r --arg v "$version" 'to_entries[] | select(.value == $v) | .key' python-versions.json)
+            if [ -n "$also" ]; then
+              echo "### Python $version, the image's: tested as the $(echo "$also" | head -n 1)" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          else
+            version=$(jq -er --arg which "$WHICH" '.[$which]' python-versions.json)
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "### Python $version ($WHICH)" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: steps.python.outputs.version
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ steps.python.outputs.version }}
           cache: pip
           cache-dependency-path: requirements-dev.txt
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.python.outputs.version
         with:
           node-version-file: package.json # devEngines.runtime
           cache: npm
 
       # Floating UI and the fonts, which the rendering tests expect
       - run: npm ci --omit=dev --ignore-scripts
+        if: steps.python.outputs.version
 
       # The page's script and styles, which the rendering tests inline
       - run: node --run build
+        if: steps.python.outputs.version
 
       - run: python -m pip install --require-hashes -r requirements-dev.txt
+        if: steps.python.outputs.version
 
       - name: Unit and integration tests
+        if: steps.python.outputs.version
         run: python -m coverage run -m unittest discover -s tests -t . -v
 
       - name: Coverage
+        if: steps.python.outputs.version
         run: |
           python -m coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
           python -m coverage report
 
       # For SonarQube Cloud, from one Python version
       - name: Coverage report (XML)
-        if: ${{ !cancelled() && matrix.python == '3.14' }}
+        if: ${{ !cancelled() && matrix.python == 'newest' }}
         run: python -m coverage xml -o coverage/python/coverage.xml --fail-under=0
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: ${{ !cancelled() && matrix.python == '3.14' }}
+        if: ${{ !cancelled() && matrix.python == 'newest' }}
         with:
           name: coverage-python
           path: coverage/python/

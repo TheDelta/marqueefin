@@ -24,9 +24,10 @@ to compare with you or keep as a backup.
 
 ## Hard constraints
 
-- **Python standard library only** (3.10+, the oldest version with security updates;
-  CI tests 3.10 and 3.14). No `pip install`. `.env` is read by a small built-in parser
-  (`load_dotenv`), not python-dotenv.
+- **Python standard library only** (3.11+, the oldest version with security updates;
+  CI tests 3.11 and 3.15; `python-versions.json`, kept in step with Python's release
+  cycle by a monthly workflow, see docs/maintenance.md). No `pip install`. `.env` is
+  read by a small built-in parser (`load_dotenv`), not python-dotenv.
 - **Two browser-side dependencies from npm.** `@noble/hashes` (SHAKE256 for pages
   protected by a passphrase, audited, MIT) is bundled by esbuild into `build/page.js`;
   `src/js/noble-license.js` puts its license next to it (a test compares it with the
@@ -79,6 +80,7 @@ src/favicon.svg      the icon and logo (a cinema marquee: bulbs around an M), in
 package.json         Floating UI for the page and the JS dev tools (+ package-lock.json)
 requirements-dev.in  the Python dev tools (Ruff, zizmor, actionlint, ShellCheck, Hadolint,
                      coverage); requirements-dev.txt: the same pinned with hashes
+python-versions.json the oldest and newest supported Python (CI's test jobs read it)
 .env.example         settings template (copy to .env)
 Dockerfile           python alpine (pinned by digest), non-root (uid 10001), tini,
                      supercronic, no pip; a Node build stage bundles the page and
@@ -93,6 +95,8 @@ scripts/demo_page.py a page with made-up titles and drawn posters (no server nee
                      used for docs/preview*.png and tested
 scripts/screenshots.mjs  `npm run screenshots`: docs/preview*.png from the demo page
 scripts/release.py   version bump, changelog section, release notes (release workflows)
+scripts/python_versions.py  the supported Python versions (python-versions.json) in
+                     Ruff, Pyright, Sonar and the docs; `update` follows Python's releases
 scripts/check.mjs    `npm run check` / `npm run format`: every check CI runs
 scripts/tools.mjs    finds the tools (node_modules, .venv, PATH) for check.mjs and hooks
 tests/               Python tests: unit + the whole export against fake_server.py

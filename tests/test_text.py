@@ -6,7 +6,7 @@ import io
 import unittest
 import urllib.error
 
-from marqueefin.dates import local_date, utc_stamp, year_of
+from marqueefin.dates import local_date, utc_stamp, utc_to_local_date, year_of
 from marqueefin.log import fmt_duration, log
 from marqueefin.media import lang
 from marqueefin.net import describe_error
@@ -45,6 +45,12 @@ class Stamps(unittest.TestCase):
         self.assertEqual(utc_stamp("2026-01-17T17:26:41.8020000Z"), "2026-01-17T17:26:41Z")
         self.assertIsNone(utc_stamp(None))
         self.assertIsNone(utc_stamp("2026-01-17"))
+
+    def test_utc_to_local_date(self):
+        # noon UTC is the same day in nearly every time zone
+        self.assertEqual(utc_to_local_date("2026-09-12T12:00:00.000Z"), "2026-09-12")
+        self.assertIsNone(utc_to_local_date(None))
+        self.assertIsNone(utc_to_local_date("soon"))
 
     def test_fmt_duration(self):
         self.assertEqual(fmt_duration(31), "31s")

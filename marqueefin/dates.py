@@ -35,6 +35,6 @@ def local_date(stamp):
 def utc_to_local_date(stamp):
     """'2026-09-12T22:30:00.000Z' -> local date '2026-09-13'."""
     try:
-        return datetime.fromisoformat(stamp.replace("Z", "+00:00")).astimezone().date().isoformat()
-    except (AttributeError, ValueError):
+        return datetime.fromisoformat(stamp).astimezone().date().isoformat()
+    except (TypeError, ValueError):
         return None

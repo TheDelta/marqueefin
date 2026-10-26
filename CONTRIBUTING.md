@@ -21,7 +21,7 @@ Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT
 
 ## Development setup
 
-You need Python 3.10 or newer, Node.js 24 with npm 11 (`devEngines` in
+You need Python 3.11 or newer, Node.js 24 with npm 11 (`devEngines` in
 `package.json`; `npm ci` stops on another Node), and (optionally) Docker.
 
 ```sh

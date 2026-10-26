@@ -10,7 +10,7 @@ import re
 import sys
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest import mock
 
 from marqueefin import __version__, render
@@ -22,7 +22,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import demo_page  # from scripts/, added to the path above
 
-GENERATED = datetime(2026, 9, 29, 15, 5, tzinfo=timezone.utc)
+GENERATED = datetime(2026, 9, 29, 15, 5, tzinfo=UTC)
 PLACEHOLDERS = ("STYLE", "VENDOR", "SCRIPT", "TITLE", "SUMMARY", "DESCRIPTION",
                 "FAVICON", "GENERATED", "UPDATED", "VERSION", "CREDIT", "DATA",
                 "FLAGS", "REQUESTS", "SETTINGS", "I18N", "SEALED", "LOCKED")  # fmt: skip

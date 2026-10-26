@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
@@ -15,6 +16,16 @@ import release
 
 GIT = shutil.which("git") or ""  # "": skipped
 URL = "https://github.com/o/r"
+
+
+def setUpModule():
+    """Git hooks (pre-push runs these tests) set GIT_DIR and the like: with them, git in
+    the temporary repositories would init, commit and tag in this one."""
+    env = mock.patch.dict(os.environ)
+    env.start()
+    unittest.addModuleCleanup(env.stop)
+    for name in [n for n in os.environ if n.startswith("GIT_")]:
+        del os.environ[name]
 
 
 def commit(subject, body=""):

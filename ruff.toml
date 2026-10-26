@@ -1,6 +1,6 @@
 # Ruff: lint (`ruff check`) and format (`ruff format`, Black's style) for all
 # Python here. Used by `npm run check`, the pre-commit hook, CI and editors.
-target-version = "py310"
+target-version = "py311"
 # 100 columns for code (the formatters enforce it), as Prettier
 line-length = 100
 extend-exclude = [".venv"]

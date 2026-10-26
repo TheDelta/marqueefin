@@ -450,7 +450,10 @@ Why the image and this setup are built the way they are (for contributors):
   10 fixed-but-unpatched OpenSSL / util-linux issues. Every build also runs `apk
 upgrade`, and pip is removed (nothing installs packages at runtime; Trivy flagged
   its bundled urllib3 / setuptools / msgpack). SonarLint's "tag or digest, not
-  both" (S8431) is accepted on purpose.
+  both" (S8431) is accepted on purpose. `.python-version` names the image's Python
+  (CI's "Tests (image Python)" and the lint jobs use it; a test keeps it equal to the
+  `FROM` line), so Dependabot's pull request for a new Python version needs it
+  bumped on the same branch.
 - The image adds only Alpine packages (tini, openssh-client, supercronic, tzdata).
   The bundle (`build/`), Floating UI and the fonts come from a Node build stage
   (`--platform=$BUILDPLATFORM`: its output is platform-independent); only those files

@@ -20,7 +20,7 @@
 <p align="center">
   <a href="https://github.com/TheDelta/marqueefin/actions/workflows/ci.yaml"><img alt="CI" src="https://github.com/TheDelta/marqueefin/actions/workflows/ci.yaml/badge.svg"></a>
   <a href="https://github.com/TheDelta/marqueefin/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/TheDelta/marqueefin?include_prereleases&sort=semver"></a>
-  <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-3776ab">
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776ab">
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/TheDelta/marqueefin"></a>
   <a href="https://github.com/TheDelta/marqueefin/pkgs/container/marqueefin"><img alt="Docker image: ghcr.io/thedelta/marqueefin" src="https://img.shields.io/badge/docker-ghcr.io%2Fthedelta%2Fmarqueefin-2496ed?logo=docker&logoColor=white"></a>
   <br>
@@ -118,7 +118,7 @@ compare.
 
 - A **Jellyfin** server (tested with 12.1) and an API key (Jellyfin: **Dashboard → API
   Keys → +**).
-- **Python 3.10+**, standard library only.
+- **Python 3.11+**, standard library only.
 - **Node.js 24** with npm, to build the page's script and styles and to install
   [Floating UI](https://floating-ui.com) and the fonts, which are built into the page.
 - Optional: [Seerr](https://github.com/seerr-team/seerr) (tested with 3.4) and its API
