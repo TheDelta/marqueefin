@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -43,10 +44,24 @@ class Places(unittest.TestCase):
             pv.sync(ROOT, save=False), [], "run: python scripts/python_versions.py sync"
         )
 
-    def test_ci_tests_the_oldest_and_the_newest(self):
+    def test_ci_tests_the_oldest_the_newest_and_the_image(self):
         """ci.yaml reads the versions by these names (the bot can't edit workflows)."""
         self.assertEqual(set(json.loads(pv.read(ROOT, pv.SOURCE))), {"oldest", "newest"})
-        self.assertIn("python: [oldest, newest]", pv.read(ROOT, ".github/workflows/ci.yaml"))
+        ci = pv.read(ROOT, ".github/workflows/ci.yaml")
+        self.assertIn("python: [oldest, newest, image]", ci)
+
+    def test_python_version_is_the_images(self):
+        """CI's "image" tests run on .python-version: Dependabot moves the Dockerfile only,
+        so its pull request for a new Python has to move .python-version too."""
+        image = re.search(r"^FROM python:(\d+\.\d+)-alpine@", pv.read(ROOT, "Dockerfile"), re.M)
+        self.assertIsNotNone(image, "the Dockerfile has no FROM python:<x.y>-alpine@…")
+        self.assertEqual(pv.read(ROOT, ".python-version").strip(), image and image.group(1))
+
+    def test_the_image_runs_a_supported_python(self):
+        """When the oldest moves past the image's Python, the image has to move too."""
+        oldest, newest = pv.source(ROOT)
+        image = pv.read(ROOT, ".python-version").strip()
+        self.assertTrue(pv.key(oldest) <= pv.key(image) <= pv.key(newest), image)
 
 
 class Update(unittest.TestCase):

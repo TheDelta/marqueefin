@@ -110,7 +110,7 @@ jobs:
             echo "the supported versions are now **$(jq -r '.oldest + " to " + .newest' python-versions.json)**."
             echo
             echo "\`scripts/python_versions.py update\` changed \`python-versions.json\`, which"
-            echo "CI's \"Tests (oldest Python)\" / \"Tests (newest Python)\" read, and the places"
+            echo "CI's \"Tests (oldest Python)\" / \"(newest Python)\" read, and the places"
             echo "that name the versions (Ruff, Pyright, Sonar, README.md, CONTRIBUTING.md,"
             echo "AGENTS.md), then \`ruff check --fix\` for the new target."
             echo

@@ -94,9 +94,11 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
   run separately: `npm run test:e2e`.
 - **Workflows** (overview for humans: `.github/workflows/README.md`; keep it in step):
   - `ci.yaml` (push to main, pull requests, by hand on release branches): "Lint and
-    checks", "Tests (oldest Python)" / "(newest Python)" (unit + integration tests,
-    coverage table in the run summary; the versions come from `python-versions.json`,
-    so the required checks keep their names when they move), "Browser tests"
+    checks", "Tests (oldest Python)" / "(newest Python)" / "(image Python)" (unit +
+    integration tests, coverage table in the run summary; the versions come from
+    `python-versions.json` and `.python-version`, so the required checks keep their
+    names when they move; the image's job skips its steps when its version is the
+    oldest or newest too, so it's always there to be required), "Browser tests"
     (`src/js/lib.js` unit tests, Playwright, coverage of `src/js/` per module in the
     run summary), "Docker image builds" (with a smoke run and a Trivy scan).
   - `pull-request.yaml`: "PR title" (commitlint and CSpell: the title becomes a
@@ -125,7 +127,7 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
     come once a year, in October.
 - **Rulesets** (set up in GitHub, not in the repository) on `main`:
   - `main`: pull requests only, squash, signed and linear history, no force push or
-    deletion, and the seven job names of ci.yaml and pull-request.yaml as required
+    deletion, and the eight job names of ci.yaml and pull-request.yaml as required
     checks, from GitHub Actions only, with "require branches to be up to date", so
     every merged state has passed CI (what gets released is what was tested). **No
     bypass**, not even for admins. Renaming a job means updating it.
