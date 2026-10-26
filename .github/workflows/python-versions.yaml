@@ -1,0 +1,125 @@
+# Monthly: the supported Python versions (python-versions.json) against Python's
+# release cycle; a pull request when one reached its end of life or a new one is out
+name: Python versions
+run-name: Python versions (${{ github.event_name == 'schedule' && 'monthly' || 'manual' }})
+
+on:
+  schedule:
+    - cron: "0 6 1 * *" # the 1st of each month (releases and ends of life: October)
+  workflow_dispatch:
+
+# The bot pushes and opens the pull request; the workflow's own token only reads
+permissions:
+  contents: read
+
+concurrency:
+  group: python-versions
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Compare with the release cycle
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      title: ${{ steps.update.outputs.title }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+
+      - name: Supported versions (devguide.python.org/versions)
+        id: update
+        run: |
+          news=$(python scripts/python_versions.py update)
+          range=$(jq -r '.oldest + " to " + .newest' python-versions.json)
+          if [ -z "$news" ]; then
+            echo "### Up to date: Python $range" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "title=build: $news" >> "$GITHUB_OUTPUT"
+            echo "### $news (Python $range)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  pull-request:
+    name: Branch and pull request
+    needs: check
+    if: needs.check.outputs.title
+    runs-on: ubuntu-24.04
+    environment: release # the bot's key; limit the environment to main
+    steps:
+      # The bot's pull request starts CI (the workflow's own token wouldn't), so the
+      # new versions are tested before the merge
+      - name: Bot token
+        id: bot
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.APP_RELEASE_BOT_ID || secrets.APP_RELEASE_BOT_ID }}
+          private-key: ${{ secrets.APP_RELEASE_BOT_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+
+      - name: Supported versions
+        run: python scripts/python_versions.py update
+
+      # A new oldest version can allow newer syntax: Ruff's target follows it (UP rules)
+      - name: Ruff's fixes for the new target
+        run: |
+          python -m pip install --require-hashes -r requirements-dev.txt
+          ruff check --fix --exit-zero --quiet .
+          ruff format --quiet .
+
+      # As in prepare-release.yaml: the commit is made through the API, on top of main,
+      # so GitHub signs it (Verified) and the bot is its author
+      - name: Branch and pull request
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          TITLE: ${{ needs.check.outputs.title }}
+        run: |
+          branch=build/python-versions
+          repo="repos/$GITHUB_REPOSITORY"
+          base=$(git rev-parse HEAD)
+          tree=$(git diff --name-only -z | while IFS= read -r -d '' path; do
+              jq -n --arg path "$path" --rawfile content "$path" \
+                '{path: $path, mode: "100644", type: "blob", content: $content}'
+            done | jq -s --arg base "$base" '{base_tree: $base, tree: .}' \
+            | gh api "$repo/git/trees" --input - --jq .sha)
+          commit=$(jq -n --arg msg "$TITLE" --arg tree "$tree" --arg base "$base" \
+              '{message: $msg, tree: $tree, parents: [$base]}' \
+            | gh api "$repo/git/commits" --input - --jq .sha)
+          # A pull request still open from last month gets the new commit
+          if gh api "$repo/git/ref/heads/$branch" --silent 2>/dev/null; then
+            gh api -X PATCH "$repo/git/refs/heads/$branch" -f sha="$commit" -F force=true --silent
+          else
+            gh api "$repo/git/refs" -f ref="refs/heads/$branch" -f sha="$commit" --silent
+          fi
+
+          {
+            echo "Python's release cycle (https://devguide.python.org/versions/) moved:"
+            echo "the supported versions are now **$(jq -r '.oldest + " to " + .newest' python-versions.json)**."
+            echo
+            echo "\`scripts/python_versions.py update\` changed \`python-versions.json\`, which"
+            echo "CI's \"Tests (oldest Python)\" / \"Tests (newest Python)\" read, and the places"
+            echo "that name the versions (Ruff, Pyright, Sonar, README.md, CONTRIBUTING.md,"
+            echo "AGENTS.md), then \`ruff check --fix\` for the new target."
+            echo
+            echo "Before merging: a check that fails on the new oldest or newest version needs a"
+            echo "fix on this branch."
+          } > body.md
+          if gh pr view "$branch" --json state --jq .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --title "$TITLE" --body-file body.md
+          else
+            gh pr create --base main --head "$branch" --title "$TITLE" --body-file body.md
+          fi
+          echo "Pull request: $(gh pr view "$branch" --json url --jq .url)" >> "$GITHUB_STEP_SUMMARY"

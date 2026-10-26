@@ -94,10 +94,11 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
   run separately: `npm run test:e2e`.
 - **Workflows** (overview for humans: `.github/workflows/README.md`; keep it in step):
   - `ci.yaml` (push to main, pull requests, by hand on release branches): "Lint and
-    checks", "Tests (Python 3.11)" / "(Python 3.14)" (unit + integration tests,
-    coverage table in the run summary), "Browser tests" (`src/js/lib.js` unit tests,
-    Playwright, coverage of `src/js/` per module in the run summary), "Docker image
-    builds" (with a smoke run and a Trivy scan).
+    checks", "Tests (oldest Python)" / "(newest Python)" (unit + integration tests,
+    coverage table in the run summary; the versions come from `python-versions.json`,
+    so the required checks keep their names when they move), "Browser tests"
+    (`src/js/lib.js` unit tests, Playwright, coverage of `src/js/` per module in the
+    run summary), "Docker image builds" (with a smoke run and a Trivy scan).
   - `pull-request.yaml`: "PR title" (commitlint and CSpell: the title becomes a
     CHANGELOG.md line, which CSpell checks; on failure the run summary explains it).
     The commit-msg hook spell-checks the first line too.
@@ -115,6 +116,13 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
   - Weekly, public repository only: `scorecard.yaml` (OpenSSF Scorecard, badge),
     `image-scan.yaml` (Trivy on the published `:latest`, results in the Security
     tab), `links.yaml` (lychee, `lychee.toml`).
+  - Monthly: `python-versions.yaml` keeps the supported Python versions in step with
+    Python's release cycle (peps.python.org/api/release-cycle.json, the devguide's
+    table): oldest and newest with bug or security fixes, in `python-versions.json`;
+    `scripts/python_versions.py` rewrites the places that name them (a test checks
+    they match) and the release bot opens the pull request, so CI tests the new
+    versions before the merge. Monthly, not weekly: Python releases and ends of life
+    come once a year, in October.
 - **Rulesets** (set up in GitHub, not in the repository) on `main`:
   - `main`: pull requests only, squash, signed and linear history, no force push or
     deletion, and the seven job names of ci.yaml and pull-request.yaml as required
@@ -192,8 +200,8 @@ false` on every checkout that doesn't push; top-level `permissions` minimal,
   with `--ignore-scripts`, CI sets `HUSKY=0`.
 - **SonarQube Cloud**, analyzed in CI (ci.yaml's `sonar` job, `sonar-project.properties`)
   for the coverage: automatic analysis can't read coverage reports. CI's jobs upload
-  `coverage-python` (`coverage.xml`, Python 3.14), `coverage-js` (`npm run test:js`
-  writes `coverage/js/lcov.info`) and `coverage-e2e` (`coverage/e2e/lcov.info`).
+  `coverage-python` (`coverage.xml`, the newest Python), `coverage-js`
+  (`npm run test:js` writes `coverage/js/lcov.info`) and `coverage-e2e` (`coverage/e2e/lcov.info`).
   Only `main` and pull requests from this repository's branches are analyzed; forks
   are skipped. It once ran on `workflow_run` to analyze forks with the token, but the
   scanner reads its settings (`sonar-project.properties`) from the checkout, so a

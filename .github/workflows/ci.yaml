@@ -53,20 +53,31 @@ jobs:
         run: zizmor .github
 
   tests:
-    name: Tests (Python ${{ matrix.python }})
+    # Named oldest / newest, not by version: the names are required checks, and
+    # python-versions.json moves (python-versions.yaml)
+    name: Tests (${{ matrix.python }} Python)
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.14"] # oldest and newest supported
+        python: [oldest, newest]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
+      - name: Python version (python-versions.json)
+        id: python
+        env:
+          WHICH: ${{ matrix.python }}
+        run: |
+          version=$(jq -er --arg which "$WHICH" '.[$which]' python-versions.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "### Python $version ($WHICH supported)" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ steps.python.outputs.version }}
           cache: pip
           cache-dependency-path: requirements-dev.txt
 
@@ -93,11 +104,11 @@ jobs:
 
       # For SonarQube Cloud, from one Python version
       - name: Coverage report (XML)
-        if: ${{ !cancelled() && matrix.python == '3.14' }}
+        if: ${{ !cancelled() && matrix.python == 'newest' }}
         run: python -m coverage xml -o coverage/python/coverage.xml --fail-under=0
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: ${{ !cancelled() && matrix.python == '3.14' }}
+        if: ${{ !cancelled() && matrix.python == 'newest' }}
         with:
           name: coverage-python
           path: coverage/python/

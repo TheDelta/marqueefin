@@ -27,6 +27,8 @@ flowchart LR
    [CONTRIBUTING.md](../../CONTRIBUTING.md#releases-maintainers).
 4. **Every Monday:** `Scorecard`, `Image scan` and `Links` run, along with
    Dependabot's update pull requests ([dependabot.yaml](../dependabot.yaml)).
+5. **On the 1st of each month:** `Python versions` opens a pull request when a
+   Python version reached its end of life or a new one came out.
 
 ## At a glance
 
@@ -41,19 +43,20 @@ flowchart LR
 | Scorecard               | [scorecard.yaml](scorecard.yaml)                         | push to `main`, weekly, by hand        | OpenSSF security rating, README badge (public repository only)                               |
 | Image scan              | [image-scan.yaml](image-scan.yaml)                       | weekly, by hand                        | Vulnerabilities in the published `:latest` image (public repository only)                    |
 | Links                   | [links.yaml](links.yaml)                                 | weekly, by hand                        | Broken links in the Markdown files (public repository only)                                  |
+| Python versions         | [python-versions.yaml](python-versions.yaml)             | monthly, by hand                       | The supported Python versions against Python's release cycle; a pull request when they move  |
 
 ## CI
 
 The main quality gate. Locally, `npm run check` and `npm run test:e2e` run the same
 checks.
 
-| Job                                | What it checks                                                                                                                                                                                                                                    | When it fails                                                                                                                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lint and checks                    | `npm run check` without the tests: Prettier, ESLint, Stylelint, markdownlint, CSpell, Ruff, Pyright, ShellCheck, Hadolint, actionlint, zizmor, LF line endings. Then zizmor's online audits (known-vulnerable or impostor action commits).        | Run `npm run format`, then `npm run check`, and fix what remains. Add a new word to `cspell.config.yaml`.                                                                                                     |
-| Tests (Python 3.11), (Python 3.14) | The Python unit tests and the whole export against a fake Jellyfin and Seerr, on the oldest and newest supported Python. The coverage table is in the run's summary.                                                                              | Run `npm test`. A failure on 3.11 only usually means newer Python syntax or library use.                                                                                                                      |
-| Browser tests                      | The `src/js/lib.js` unit tests, then the demo page in Chromium (Playwright) with an accessibility scan (axe) and coverage of `src/js/` per module (in the run's summary; the full report is the `coverage-e2e` artifact).                         | Run `npm run test:js` and `npm run test:e2e`. The run's `playwright-report` artifact holds traces and screenshots. Coverage below the minimum: add tests for the uncovered lines (`coverage/e2e/index.html`). |
-| SonarQube Cloud                    | The code analysis with the coverage of the test jobs, for `main` and pull requests from this repository's branches (forks and Dependabot are skipped). On a pull request it fails with the quality gate. See [SonarQube Cloud](#sonarqube-cloud). | Fix the issues SonarQube Cloud lists on the pull request, or add tests for the uncovered new lines.                                                                                                           |
-| Docker image builds                | Builds the image (not pushed). Runs it once against the fake server, hardened like `compose.yaml`. Starts it in scheduled mode until it's healthy. Scans it with Trivy for fixable HIGH / CRITICAL vulnerabilities.                               | Run `docker build`. For Trivy findings: merge Dependabot's base image update, or bump the digest in the `Dockerfile`. `apk upgrade` covers fixes between images.                                              |
+| Job                                    | What it checks                                                                                                                                                                                                                                    | When it fails                                                                                                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lint and checks                        | `npm run check` without the tests: Prettier, ESLint, Stylelint, markdownlint, CSpell, Ruff, Pyright, ShellCheck, Hadolint, actionlint, zizmor, LF line endings. Then zizmor's online audits (known-vulnerable or impostor action commits).        | Run `npm run format`, then `npm run check`, and fix what remains. Add a new word to `cspell.config.yaml`.                                                                                                     |
+| Tests (oldest Python), (newest Python) | The Python unit tests and the whole export against a fake Jellyfin and Seerr, on the oldest and newest supported Python (`python-versions.json`; the run's summary names the version). The coverage table is in the run's summary.                | Run `npm test`. A failure on the oldest only usually means newer Python syntax or library use.                                                                                                                |
+| Browser tests                          | The `src/js/lib.js` unit tests, then the demo page in Chromium (Playwright) with an accessibility scan (axe) and coverage of `src/js/` per module (in the run's summary; the full report is the `coverage-e2e` artifact).                         | Run `npm run test:js` and `npm run test:e2e`. The run's `playwright-report` artifact holds traces and screenshots. Coverage below the minimum: add tests for the uncovered lines (`coverage/e2e/index.html`). |
+| SonarQube Cloud                        | The code analysis with the coverage of the test jobs, for `main` and pull requests from this repository's branches (forks and Dependabot are skipped). On a pull request it fails with the quality gate. See [SonarQube Cloud](#sonarqube-cloud). | Fix the issues SonarQube Cloud lists on the pull request, or add tests for the uncovered new lines.                                                                                                           |
+| Docker image builds                    | Builds the image (not pushed). Runs it once against the fake server, hardened like `compose.yaml`. Starts it in scheduled mode until it's healthy. Scans it with Trivy for fixable HIGH / CRITICAL vulnerabilities.                               | Run `docker build`. For Trivy findings: merge Dependabot's base image update, or bump the digest in the `Dockerfile`. `apk upgrade` covers fixes between images.                                              |
 
 ## Pull request
 
@@ -174,6 +177,28 @@ it, so it's a required check.
   runs without that coverage.
 - **The quality gate fails on coverage:** add tests for the new lines; SonarQube
   Cloud's pull request page lists them.
+
+## Python versions
+
+On the 1st of each month (or by hand), `scripts/python_versions.py update` compares
+`python-versions.json` with Python's release cycle
+([devguide.python.org/versions](https://devguide.python.org/versions/)): supported are
+the versions with bug fixes or security fixes. When the oldest or the newest of them
+changed, it updates the file and the places that name the versions (Ruff, Pyright,
+SonarQube Cloud, `README.md`, `CONTRIBUTING.md`, `AGENTS.md`), applies Ruff's fixes for
+the new target, and the release bot opens the pull request
+`build: require Python 3.12 or newer (3.11 is end of life)` or `build: test Python 3.16`
+on `build/python-versions` (a pull request still open gets the new commit). CI then
+tests the new versions; fix what fails on that branch before merging.
+
+- **The check names stay:** CI's jobs are `Tests (oldest Python)` and
+  `Tests (newest Python)` and read the versions from `python-versions.json`, so the
+  ruleset doesn't change, and the bot never edits a workflow (its token can't).
+- **By hand:** edit `python-versions.json`, then `python scripts/python_versions.py sync`.
+  A test fails while a place doesn't match the file.
+- **Fails at "Bot token":** as for [Prepare release](#prepare-release).
+- **Fails at "Supported versions":** peps.python.org was unreachable or changed its
+  format; run it again by hand.
 
 ## Weekly (public repository only)
 
