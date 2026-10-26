@@ -94,7 +94,7 @@ settings. How to use them: [CONTRIBUTING.md](../CONTRIBUTING.md) and
   run separately: `npm run test:e2e`.
 - **Workflows** (overview for humans: `.github/workflows/README.md`; keep it in step):
   - `ci.yaml` (push to main, pull requests, by hand on release branches): "Lint and
-    checks", "Tests (Python 3.10)" / "(Python 3.14)" (unit + integration tests,
+    checks", "Tests (Python 3.11)" / "(Python 3.14)" (unit + integration tests,
     coverage table in the run summary), "Browser tests" (`src/js/lib.js` unit tests,
     Playwright, coverage of `src/js/` per module in the run summary), "Docker image
     builds" (with a smoke run and a Trivy scan).

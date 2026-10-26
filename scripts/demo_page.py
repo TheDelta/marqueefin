@@ -14,7 +14,7 @@ import hashlib
 import html
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from marqueefin import render
@@ -107,7 +107,7 @@ def media(extra):
 
 
 def days_from_now(days):
-    return (datetime.now(timezone.utc) + timedelta(days=days)).date().isoformat()
+    return (datetime.now(UTC) + timedelta(days=days)).date().isoformat()
 
 
 def season_status(s, n, extra):
@@ -159,7 +159,7 @@ def viewer_fields(rec, extra):
     """The exporting user's watched / favorite status, and a German title."""
     if extra.get("watched"):
         rec["watched"] = True
-        three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
+        three_days_ago = datetime.now(UTC) - timedelta(days=3)
         rec["lastWatched"] = three_days_ago.strftime("%Y-%m-%dT%H:%M:%SZ")
     if extra.get("watched_pct"):
         rec["watchedPct"] = extra["watched_pct"]

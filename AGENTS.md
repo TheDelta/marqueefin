@@ -24,8 +24,8 @@ to compare with you or keep as a backup.
 
 ## Hard constraints
 
-- **Python standard library only** (3.10+, the oldest version with security updates;
-  CI tests 3.10 and 3.14). No `pip install`. `.env` is read by a small built-in parser
+- **Python standard library only** (3.11+, the oldest version with security updates;
+  CI tests 3.11 and 3.14). No `pip install`. `.env` is read by a small built-in parser
   (`load_dotenv`), not python-dotenv.
 - **Two browser-side dependencies from npm.** `@noble/hashes` (SHAKE256 for pages
   protected by a passphrase, audited, MIT) is bundled by esbuild into `build/page.js`;

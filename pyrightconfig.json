@@ -2,7 +2,7 @@
   "include": ["export.py", "marqueefin", "docker", "scripts", "tests"],
   "exclude": ["**/node_modules", "**/.venv", "**/__pycache__"],
   "extraPaths": [".", "scripts"],
-  "pythonVersion": "3.10",
+  "pythonVersion": "3.11",
   "typeCheckingMode": "standard",
   "reportUnusedImport": "error",
   "reportUnusedVariable": "error",

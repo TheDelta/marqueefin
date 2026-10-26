@@ -19,7 +19,7 @@ import io
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import changelog  # scripts/changelog.py, next to this script
 
@@ -233,7 +233,7 @@ def release_section(text, version):
         sys.exit("CHANGELOG.md: nothing under [Unreleased] to release")
     if f"## [{version}]" in text:
         sys.exit(f"CHANGELOG.md already has a section for [{version}]")
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     text = replace_section(text, "Unreleased", body)
     return text.replace(
         UNRELEASED,
