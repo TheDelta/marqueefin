@@ -1,5 +1,7 @@
 """scripts/python_versions.py: the supported Python versions and the places naming them."""
 
+import contextlib
+import io
 import json
 import os
 import re
@@ -7,6 +9,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
@@ -64,14 +67,27 @@ class Places(unittest.TestCase):
         self.assertTrue(pv.key(oldest) <= pv.key(image) <= pv.key(newest), image)
 
 
-class Update(unittest.TestCase):
+class Copy(unittest.TestCase):
+    """A copy of this repository's python-versions.json and the places naming it."""
+
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.root = tmp.name
-        for name in [pv.SOURCE, *pv.places("3.11", "3.15")]:
+        for name in [pv.SOURCE, *pv.places(*pv.source(ROOT))]:
             shutil.copy(os.path.join(ROOT, name), os.path.join(self.root, name))
+        pv.write(self.root, pv.SOURCE, '{"oldest": "3.11", "newest": "3.15"}\n')
+        pv.sync(self.root)
 
+    def run_main(self, *args):
+        out = io.StringIO()
+        argv = ["python_versions.py", "--root", self.root, *args]
+        with mock.patch.object(sys, "argv", argv), contextlib.redirect_stdout(out):
+            pv.main()
+        return out.getvalue()
+
+
+class Update(Copy):
     def test_an_end_of_life_and_a_release(self):
         cycle = {**CYCLE, "3.16": {"status": "bugfix"}}
         title = pv.update(self.root, cycle)
@@ -100,6 +116,21 @@ class Update(unittest.TestCase):
         pv.write(self.root, "CONTRIBUTING.md", "Any Python.\n")
         with self.assertRaises(SystemExit):
             pv.sync(self.root)
+
+
+class Command(Copy):
+    def test_sync_names_what_it_rewrote(self):
+        pv.write(self.root, pv.SOURCE, '{"oldest": "3.12", "newest": "3.15"}\n')
+        self.assertIn("updated ruff.toml\n", self.run_main("sync"))
+        self.assertEqual(self.run_main("sync"), "")
+
+    def test_update_reads_the_release_cycle(self):
+        cycle = {"3.12": {"status": "security"}, "3.15": {"status": "bugfix"}}
+        response = io.BytesIO(json.dumps(cycle).encode())
+        with mock.patch.object(pv.urllib.request, "urlopen", return_value=response) as urlopen:
+            out = self.run_main("update")
+        self.assertEqual(out, "require Python 3.12 or newer (3.11 is end of life)\n")
+        self.assertEqual(urlopen.call_args.args[0].full_url, pv.CYCLE_URL)
 
 
 if __name__ == "__main__":
