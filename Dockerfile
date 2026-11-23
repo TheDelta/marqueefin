@@ -15,7 +15,7 @@ COPY src/js/ ./src/js/
 COPY src/css/ ./src/css/
 RUN node --run build
 
-FROM python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+FROM python:3.15-alpine@sha256:0f9552bb28711333da16915ec146f5e6bb44a7fdac9ced15dc17c2e0206346dd
 
 # pip goes: nothing is installed at runtime, and its vendored libraries only add CVEs
 RUN apk upgrade --no-cache \
